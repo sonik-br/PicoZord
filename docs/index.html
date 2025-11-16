@@ -1,0 +1,2757 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+RetroZord USB adapter
+by Matheus Fraguas (sonik-br)
+https://github.com/sonik-br/PicoZord
+
+PS4 auth code based on GP2040-CE project
+https://github.com/OpenStickCommunity/GP2040-CE/
+
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <title>PicoZord</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsencrypt@latest/bin/jsencrypt.min.js"></script>
+
+<style>
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-button, .tab-sub-button {
+    padding: 10px 20px;
+    background: #eee;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.tab-button.active, .tab-sub-button.active {
+    background: #007bff;
+    color: white;
+}
+
+.tab-content, .tab-sub-content {
+    display: none;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.tab-content.active, .tab-sub-content.active {
+    display: block;
+}
+
+.custom-button {
+    padding: 5px 10px;
+    background: #357a38;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.custom-button2 {
+    padding: 5px 10px;
+    background: #aa2e25;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 10px 20px;
+        }
+        
+        footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+        	height: 70px;
+        }
+        
+        .footer-text {
+            flex: 1;
+            text-align: center;
+        }
+
+
+
+#stick_info {
+  font-family:
+    'Consolas',
+    'Menlo',
+    'Monaco',
+    'Courier New',
+    monospace;
+  font-size: 0.8em;
+}
+
+
+
+body { font-family: sans-serif; background: white; color: black; text-align: center; }
+.gamepad { display: grid; grid-template-areas:
+    "dpad left-stick right-stick buttons buttons2"
+    "triggers triggers triggers triggers analogbuttons";
+    gap: 20px; justify-content: center; margin-top: 40px;
+}
+
+.buttons_square_4 { display: grid; grid-template-areas:
+    "btn_l1 btn_l2 btn_r1 btn_r2"
+    ". btn_x btn_y ."
+    ". btn_a btn_b .";
+    gap: 20px; justify-content: center; margin-top: 40px;
+}
+
+.buttons_diamond_4 { display: grid; grid-template-areas:
+    "btn_l1 btn_l2 . btn_r1 btn_r2"
+	". . btn_y . ."
+	". btn_x . btn_b . "
+    ". . btn_a . .";
+    justify-content: center; margin-top: 40px;
+}
+
+.buttons_gc { display: grid; grid-template-areas:
+	". . btn_r1"
+    "btn_l2 . btn_r2"
+	". btn_x ."
+    "btn_a btn_b btn_y"
+	". . btn_l1";
+    justify-content: center; margin-top: 40px;
+}
+
+.buttons_square_6 { display: grid; grid-template-areas:
+    "btn_l2 . btn_r2"
+    "btn_x btn_y btn_l1"
+    "btn_a btn_b btn_r1";
+    gap: 20px; justify-content: center; margin-top: 40px;
+}
+
+
+.section { border: 2px solid #444; padding: 10px; border-radius: 10px; background: #222; }
+.dpad button, .buttons button {
+    width: 40px; height: 40px; margin: 5px;
+    background: #333; color: #eee; border: none; border-radius: 5px;
+}
+
+.dpad { display: grid; grid-template-areas:
+    ". dpad_u ."
+    "dpad_l . dpad_r"
+    ". dpad_d .";
+}
+
+/*.active { background: limegreen !important; }*/
+.stick { width: 100px; height: 100px; background: #333; border-radius: 50%; position: relative; }
+.thumb { width: 20px; height: 20px; background: red; border-radius: 50%; position: absolute; top: 40px; left: 40px; }
+.trigger { width: 100px; height: 20px; background: #333; margin: 5px auto; position: relative; }
+.fill { height: 100%; background: orange; position: absolute; top: 0; left: 0; }
+
+
+
+
+
+
+
+
+/*
+#gamepad {
+  position: relative;
+  width: 400px;
+  height: 250px;
+  background: #222;
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  font-family: sans-serif;
+}
+
+.button, .trigger {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #555;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.trigger {
+  width: 60px;
+  height: 20px;
+  border-radius: 10px;
+  background: #333;
+  line-height: 20px;
+}
+
+.stick {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #0f0;
+  border-radius: 50%;
+}
+*/
+
+/* Positioning */
+/*
+#A { top: 80px; left: 320px; }
+#B { top: 50px; left: 360px; }
+#X { top: 50px; left: 280px; }
+#Y { top: 20px; left: 320px; }
+
+#L1 { top: 0px; left: 40px; }
+#R1 { top: 0px; left: 300px; }
+#L2 { top: -20px; left: 40px; }
+#R2 { top: -20px; left: 300px; }
+
+#L3 { top: 180px; left: 60px; }
+#R3 { top: 180px; left: 280px; }
+
+#SELECT { top: 100px; left: 150px; }
+#START { top: 100px; left: 200px; }
+
+#PAD_U { top: 80px; left: 100px; }
+#PAD_D { top: 120px; left: 100px; }
+#PAD_L { top: 100px; left: 80px; }
+#PAD_R { top: 100px; left: 120px; }
+
+#CAPTURE { top: 55px; left: 150px; }
+#HOME { top: 55px; left: 200px; }
+
+
+#leftStick { top: 140px; left: 60px; }
+#rightStick { top: 140px; left: 280px; }
+*/
+
+
+
+
+/* table */
+
+.zebra {
+  border-collapse: collapse;         /* clean borders */
+  width: 100%;
+  font-family: system-ui, sans-serif;
+  text-align: left;
+}
+
+/* cells */
+.zebra th,
+.zebra td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e6e6e6;
+  /*color:green;*/
+}
+
+/* alternating rows */
+.zebra tbody tr:nth-child(odd) {
+  background: #ffffff;               /* odd rows */
+}
+.zebra tbody tr:nth-child(even) {
+  background: #f8f9fa;               /* even rows (striped) */
+}
+
+/* subtle hover */
+.zebra tbody tr:hover {
+  background: #eef2f7;
+}
+
+/* keep header visually distinct */
+.zebra thead th {
+  background: #f1f3f5;
+  font-weight: 600;
+}
+
+
+/* checkbox */
+/* reset any focus styles on the state spans */
+.toggle .state {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+/* ensure spans are not keyboard-focusable */
+.toggle .state { pointer-events: auto; }
+
+/* keep accessible focus visible on the checkbox only */
+.toggle-input:focus-visible {
+  outline: 2px solid #2563eb;    /* visible keyboard focus */
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* optional light effect for all focus (mouse+keyboard) */
+.toggle-input:focus {
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+
+/* show/hide state text as before */
+.toggle .state-on { display: none; }
+.toggle .state-off { display: inline; }
+.toggle-input:checked + .state-off { display: none; }
+.toggle-input:checked + .state-off + .state-on { display: inline; }
+
+
+
+</style>
+
+  <!-- Hotkeys BEGIN -->
+  <style>
+    body {
+      font-family: sans-serif;
+      /*padding: 20px;*/
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 1.4em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      vertical-align: middle;
+      text-align: left;
+    }
+    .keywrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .selected-btns,
+    .rem-selected {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 24px;
+    }
+    .menu,
+    .rem-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid #aaa;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+    .btn-item {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      background: #e8e8e8;
+      border-radius: 4px;
+      cursor: default;
+      user-select: none;
+    }
+    .btn-item:hover {
+      background: #d0d0d0;
+    }
+    .btn-item .remove {
+      margin-left: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .add-btn {
+      padding: 2px 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .move-btn {
+      padding: 4px 8px;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .code {
+      font-family: monospace;
+    }
+    .seconds-input {
+      width: 60px;
+      padding: 2px 4px;
+      font-size: 0.9em;
+    }
+  </style>
+  <!-- Hotkeys BEGIN -->
+
+
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="content">
+
+<h1>PicoZord Web Config</h1>
+
+
+
+<button class="custom-button" id="connect">Connect</button>
+
+<div id="connected_device" style="display:none;">
+<button class="custom-button2" id="disconnect">Disconnect</button>
+<button class="custom-button2" id="send_bootsel">Enter bootloader mode</button>
+<br/>
+<br/>
+
+
+      <div id="gamepad" class="gamepad" style="display:none">
+        <div class="section" style="grid-area: dpad">
+          <h3>D-Pad</h3>
+          <div class="buttons dpad">
+            <button style="grid-area: dpad_u" data-btn="PAD_U">↑</button>
+            <button style="grid-area: dpad_l" data-btn="PAD_L">←</button>
+            <button style="grid-area: dpad_d" data-btn="PAD_D">↓</button>
+            <button style="grid-area: dpad_r" data-btn="PAD_R">→</button>
+          </div>
+        </div>
+
+        <div class="section" style="grid-area: left-stick">
+          <h3>Left Stick</h3>
+          <div class="stick" id="LX">
+            <div class="thumb" id="thumb-LX"></div>
+          </div>
+		  <p id="stick_info"></p>
+        </div>
+
+        <div class="section" style="grid-area: right-stick">
+          <h3>Right Stick</h3>
+          <div class="stick" id="RX">
+            <div class="thumb" id="thumb-RX"></div>
+          </div>
+        </div>
+    <!--
+    * 4 face buttons (follows xbox layout)
+    * X  Y
+    * A  B
+    * 
+    * 6 face buttons
+    * X  Y  L1(Z)
+    * A  B  R1(C)
+    * 
+    * 8 face buttons
+    * X  Y  L1(Z)  L2
+    * A  B  R1(C)  R2
+    -->
+        <div class="section" style="grid-area: buttons">
+          <h3>Simulated output layout (4/6/8)</h3>
+          <div class="buttons buttons_square_4">
+            <button style="grid-area: btn_a" data-btn="A" title="A"></button>
+            <button style="grid-area: btn_b" data-btn="B" title="B"></button>
+            <button style="grid-area: btn_x" data-btn="X" title="X"></button>
+            <button style="grid-area: btn_y" data-btn="Y" title="Y"></button>
+            <button style="grid-area: btn_l1" data-btn="L1" title="L1"></button>
+            <button style="grid-area: btn_r1" data-btn="R1" title="R1"></button>
+            <button style="grid-area: btn_l2" data-btn="L2" title="L2"></button>
+            <button style="grid-area: btn_r2" data-btn="R2" title="R2"></button>
+            <!--<button id="L3">L3</button>
+            <button id="R3">R3</button>-->
+            <!--<button id="START">Start</button>
+            <button id="SELECT">Select</button>
+            <button id="HOME">Home</button>-->
+          </div>
+        </div>
+
+        <div class="section buttons" style="grid-area: buttons; display:none">
+          <h3>Main Buttons (layout: 6)</h3>
+          <!--<button id="A">A</button>
+          <button id="B">B</button>
+          <button id="X">X</button>
+          <button id="Y">Y</button>
+          <button id="L1">L1</button>
+          <button id="R1">R1</button>
+          <button id="L2">L2</button>
+          <button id="R2">R2</button>-->
+          <!--<button id="L3">L3</button>
+          <button id="R3">R3</button>-->
+          <!--<button id="START">Start</button>
+          <button id="SELECT">Select</button>
+          <button id="HOME">Home</button>-->
+        </div>
+
+
+        <div class="section buttons" style="grid-area: buttons2">
+          <h3>Digital Buttons</h3>
+          <button data-btn="PAD_U">↑</button>
+          <button data-btn="PAD_D">↓</button>
+		  <button data-btn="PAD_L">←</button>
+          <button data-btn="PAD_R">→</button>
+          <button data-btn="A" title="A">A</button>
+          <button data-btn="B" title="B">B</button>
+          <button data-btn="X" title="X">X</button>
+          <button data-btn="Y" title="Y">Y</button>
+          <button data-btn="L1" title="L1">L1</button>
+          <button data-btn="R1" title="R1">R1</button>
+          <button data-btn="L2" title="L2">L2</button>
+          <button data-btn="R2" title="R2">R2</button>
+          <button data-btn="L3" title="L3">L3</button>
+          <button data-btn="R3" title="R3">R3</button>
+          <button data-btn="START">Start</button>
+          <button data-btn="SELECT">Select</button>
+		  <button data-btn="HOME">Home</button>
+          <button data-btn="CAPTURE">Capture</button>
+        </div>
+
+        <div class="section buttons" style="grid-area: analogbuttons">
+          <h3>Analog Buttons</h3>
+          <button id="ANALOG_A">A</button>
+          <button id="ANALOG_B">B</button>
+          <button id="ANALOG_X">X</button>
+          <button id="ANALOG_Y">Y</button>
+          <button id="ANALOG_L1">L1</button>
+          <button id="ANALOG_R1">R1</button>
+          <button id="ANALOG_L2">L2</button>
+          <button id="ANALOG_R2">R2</button>
+        </div>
+
+        <div class="section" style="grid-area: triggers">
+          <h3>Analog Triggers</h3>
+            <button style="grid-area: btn_l2" id="analog-L2" title="L2">L2</button>
+            <button style="grid-area: btn_r2" id="analog-R2" title="R2">R2</button>
+          <!--
+		  <div class="trigger"><div class="fill" id="analog-L2"></div></div>
+          <div class="trigger"><div class="fill" id="analog-R2"></div></div>
+		  -->
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+	<div id="gamepadzzz" style="display:none">
+	  <!-- Face buttons -->
+	  <div class="button" id="A">A</div>
+	  <div class="button" id="B">B</div>
+	  <div class="button" id="X">X</div>
+	  <div class="button" id="Y">Y</div>
+
+	  <!-- Shoulder buttons -->
+	  <div class="button" id="L1">L1</div>
+	  <div class="button" id="R1">R1</div>
+	  <div class="trigger" id="L2">L2</div>
+	  <div class="trigger" id="R2">R2</div>
+
+	  <!-- Stick clicks -->
+	  <div class="button" id="L3">L3</div>
+	  <div class="button" id="R3">R3</div>
+
+	  <!-- Select, Start, Home -->
+	  <div class="button" id="SELECT">Select</div>
+	  <div class="button" id="START">Start</div>
+	  <div class="button" id="HOME">Home</div>
+	  <div class="button" id="CAPTURE">Capt.</div>
+
+	  <!-- D-pad -->
+	  <div class="button" id="PAD_U">↑</div>
+	  <div class="button" id="PAD_D">↓</div>
+	  <div class="button" id="PAD_L">←</div>
+	  <div class="button" id="PAD_R">→</div>
+
+	  <!-- Analog sticks -->
+	  <div class="stick" id="leftStick"></div>
+	  <div class="stick" id="rightStick"></div>
+	</div>
+
+
+
+  <div class="tabs">
+    <button class="tab-button active" data-tab="tab1">Info</button>
+    <button class="tab-button" data-tab="tab2">Config</button>
+	<button class="tab-button" data-tab="tab3" disabled="true">Keys</button>
+  </div>
+  <div id="tab1" class="tab-content active">
+	<h4>Info</h4>
+	  <p id="device_info"></p>
+  </div>
+  <div id="tab2" class="tab-content">
+
+  <div class="tabs">
+    <button class="tab-sub-button active" data-tab="tab_sub1">Input/Output</button>
+    <button class="tab-sub-button" data-tab="tab_sub2">PS4</button>
+	<button class="tab-sub-button" data-tab="tab_sub3">Analog</button>
+    <button class="tab-sub-button" data-tab="tab_sub4">Hotkeys</button>
+    <button class="tab-sub-button" data-tab="tab_sub5">Other</button>
+  </div>
+
+  <div id="tab_sub1" class="tab-sub-content active">
+	<h4>Input/Output</h4>
+	<table class="zebra">
+    <thead>
+      <tr><th>Item</th><th>Current</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+	  <td>Input Mode</td>
+	  <td><select id="config_devicemode"></select></td>
+	  <td>Input into the adapter<br/> Default is <span id="default_devicemode">-</span></td>
+	  </tr>
+      <tr>
+	  <td>Output Mode</td>
+	  <td><select id="config_outputmode"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode">-</span></td>
+	  </tr>
+      <!--
+      <tr>
+	  <td>Automatic Output Mode</td>
+	  <td>
+        <label class="toggle">
+    	    <input type="checkbox" class="toggle-input" id="config_enable_automatic_output" />
+    	    <span class="state state-off" aria-live="polite">Disabled</span>
+    	    <span class="state state-on" aria-hidden="true">Enabled</span>
+        </label>
+      </td>
+	  <td>
+      Automatically change the Output Mode based on USB Host detection.<br/>
+      Supports: Windows, Switch, PS4, ogXbox.<br/>
+      Will fall back to the selected Output Mode.<br/>
+      Default is <span id="default_automatic_output">Disabled</span>
+      </td>
+	  </tr>
+      -->
+    </tbody>
+    </table>
+	
+    <h4>Output mode shortcut</h4>
+	<table class="zebra" id="shortcutTable">
+    <thead>
+      <tr><th>Button</th><th>Output Mode</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+    <!--
+      <tr>
+	  <td>A</td>
+	  <td><select id="config_outputmode_A"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_A">OUTPUT_PS4</span></td>
+	  </tr>
+      <tr>
+	  <td>B</td>
+	  <td><select id="config_outputmode_B"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_B">OUTPUT_HID</span></td>
+	  </tr>
+      <tr>
+	  <td>X</td>
+	  <td><select id="config_outputmode_X"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_X">OUTPUT_XINPUT</span></td>
+	  </tr>
+      <tr>
+	  <td>Y</td>
+	  <td><select id="config_outputmode_Y"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_Y">OUTPUT_SWITCHPRO</span></td>
+	  </tr>
+      <tr>
+	  <td>L1</td>
+	  <td><select id="config_outputmode_L1"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_L1">OUTPUT_PS3</span></td>
+	  </tr>
+      <tr>
+	  <td>R1</td>
+	  <td><select id="config_outputmode_R1"></select></td>
+	  <td>Output from the adapter<br/>Default is <span id="default_outputmode_R1">OUTPUT_GCWIIU</span></td>
+	  </tr>
+      -->
+    </tbody>
+    </table>
+  </div>
+
+  <div id="tab_sub2" class="tab-sub-content">
+    <h4>PS4</h4>
+	<table class="zebra">
+      <thead>
+        <tr><th>Item</th><th>Current</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+    	<tr>
+    	<td>PS4 Mode</td>
+    	  <td>
+    		<select id="config_ps4_mode">
+    		  <option value="0">PS4_GAMEPAD</option>
+    		  <option value="1">PS4_ARCADESTICK</option>
+    		</select>
+    	  </td>
+    	  <td>
+    		Controller mode used when in OUTPUT_PS4 mode.<br/>
+    		Each mode has different compatibility and authentication requirements.
+    		<!--
+    
+    		<ul>
+    		<li>GAMEPAD - Supported on PS4 console and PS4 games on PS5 console.<br/>Authentication: PS4/PS5 Can use Key Files or USB Passthrough (DS4 is supported).
+    		<li>ARCADESTICK - Supported on PS4 console and PS4 games on PS5 console, and some PS5 games.<br/>Authentication: PS4 can use Key Files or USB Passthrough. PS5 must use USB Passthrough (DS4 is not supported).
+    		</ul>
+    		GAMEPAD and ARCADESTICK are supported on all PS4 games (on PS4 or PS5 console).<br/>ARCADESTICK is supported on some PS5 games.<br/>
+    		GAMEPAD supports using Key Files or USB Passthrough (DS4 is supported).
+    		ARCADESTICK does not support using Key Files and requires .
+    		Default is <span id="default_ps4_mode">-</span>
+    		-->
+    
+            <br/>Recommended: GAMEPAD for PS4 games, ARCADESTICK for some PS5 games.<br/>
+            More details at the <a href="#ps4_mode_details">table</a> below.<br/>
+            Default is <span id="default_ps4_mode">-</span>
+    	  </td>
+    	<!--
+    	  <td>PS4 Mode</td>
+    	  <td><span id="default_ps4_mode">-</span></td>
+    	  <td>
+    		<select id="config_ps4_mode">
+    		  <option value="0">PS4_GAMEPAD</option>
+    		  <option value="1">PS4_ARCADESTICK</option>
+    		</select>
+    	  </td>
+    	  <td>GAMEPAD and ARCADESTICK is supported on all PS4 games (on PS4 or PS5 console).<br/>ARCADESTICK is supported on some PS5 games.</td>
+    	  -->
+    	</tr>
+    	<tr>
+    	  <td>Use PS4 Keys</td>
+    	  <td>
+    		<label class="toggle">
+    		  <input type="checkbox" class="toggle-input" id="config_enable_ps4key" />
+    		  <span class="state state-off" aria-live="polite">Disabled</span>
+    		  <span class="state state-on" aria-hidden="true">Enabled</span>
+    		</label>
+    	  </td>
+    	  <td>
+    		Use uploaded key files extracted from a DualShock 4 controller. Used when in OUTPUT_PS4 mode.<br/>
+    		Enable to use the uploaded files.<br/>
+    		Disable to use USB Passthrough (requires a USB Host input port).<br/>
+    		Default is <span id="default_enable_ps4key">-</span>
+    	  </td>
+    	</tr>
+      </tbody>
+    </table>
+
+<br/><br/>
+
+PS4 Mode details
+<table id="ps4_mode_details" class="zebra">
+<thead>
+  <tr>
+    <th rowspan=2>MODE</th>
+    <th rowspan=2>PS4 game<br/>(on PS4/PS5 console)</th>
+    <th rowspan=2>PS5 game</th>
+    <th colspan=3>Authentication</th>
+  </tr>
+  <tr>
+    <th>Key Files</th>
+    <th>USB with DualShock 4</th>
+    <th>USB with special device</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>GAMEPAD</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+  </tr>
+  <tr>
+    <td>ARCADESTICK</td>
+    <td>✅</td>
+    <td>✅⚠️Supported only by a few games</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+  </tr>
+</tbody>
+</table>
+
+  </div>
+
+  <div id="tab_sub3" class="tab-sub-content">
+	<h4>Analog</h4>
+	<table class="zebra">
+    <thead>
+      <tr><th>Item</th><th>Current</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+	  <tr>
+	    <td>Deadzone (%)</td>
+	    <td><input type="number" id="config_deadzone_percent" min="0" max="80" /></td>
+	    <td>The inner deadzone is the radius around the stick center that is treated as neutral.<br/>
+	    Enter a percentage value; the same value is applied to both analog sticks if they are present.<br/>
+	    Default is <span id="default_deadzone_percent">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>N64 Analog Stick Max</td>
+	    <td><input type="number" id="config_analog_max_n64" min="30" max="127" /></td>
+	    <td>Maximum value for N64 analog stick.<br/>
+	    The N64 controller does not report the stick's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_max_n64">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>GC Analog Stick Max</td>
+	    <td><input type="number" id="config_analog_max_gc" min="30" max="127" /></td>
+	    <td>Maximum value for GC analog sticks.<br/>
+	    The GC controller does not report the stick's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_max_gc">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>WII Analog Stick Max</td>
+	    <td><input type="number" id="config_analog_max_wii" min="30" max="127" /></td>
+	    <td>Maximum value for GC analog sticks.<br/>
+	    The WII controller does not report the stick's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_max_wii">75</span></td>
+	  </tr>
+    </tbody>
+    </table>
+  </div>
+
+  <div id="tab_sub4" class="tab-sub-content">
+    <h4>Function Hotkeys</h4>
+    <table class="zebra" id="hotkeyTable">
+      <thead>
+        <tr>
+          <th>Function</th>
+          <th>Hotkey</th>
+          <th>Hold Time (seconds)</th>
+          <th>Input (hex)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    
+    <h4>Button Hotkeys</h4>
+    <table class="zebra" id="remapTable">
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Output</th>
+          <th>Exclusive</th>
+          <th>Clear</th>
+          <th>Move</th>
+          <th>Input (hex)</th>
+          <th>Output (hex)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="tab_sub5" class="tab-sub-content">
+    <h4>Other</h4>
+    <table class="zebra">
+      <thead>
+        <tr><th>Item</th><th>Current</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+    
+    	<tr>
+    	  <td>SOCD Mode</td>
+    	  <td>
+    	    <select id="config_socdmode">
+    	      <option value="0">SOCD_OFF</option>
+    	      <option value="1">SOCD_NEUTRAL</option>
+    	      <option value="2">SOCD_SECOND</option>
+    	      <option value="3">SOCD_FIRST</option>
+    	    </select>
+    	  </td>
+    	  <td>How opposite directional inputs are handled when pressed simultaneously.
+    	  <ul>
+    	  <li>OFF - No resolution. Both inputs remain active.
+    	  <li>NEUTRAL - Both released. Both inputs are deactivated and the output is neutral.
+    	  <li>SECOND - Second input wins. The most recently activated input takes priority.
+    	  <li>FIRST - First input wins. The input that was activated first remains active.
+    	  </ul>
+    	  See <a href="#socd_info">notes</a> below.<br/>
+    	  Default is <span id="default_socdmode">-</span></td>
+    	</tr>
+    	<tr>
+    	  <td>DPAD as Buttons</td>
+    	  <td>
+    		<label class="toggle">
+    		  <input type="checkbox" class="toggle-input" id="config_dpad_as_buttons" />
+    		  <span class="state state-off" aria-live="polite">Disabled</span>
+    		  <span class="state state-on" aria-hidden="true">Enabled</span>
+    		</label>
+    	  </td>
+    	  <td>
+    		Map DPAD to buttons. Useful for dance mats.<br/>
+    		Applies only to OUTPUT_HID and OUTPUT_MISTER
+    		<br/>Default is <span id="default_dpad_as_buttons">-</span>
+    		</td>
+    	</tr>
+    	<tr>
+    	  <td>NSO Special</td>
+    	  <td>
+    		<label class="toggle">
+    		  <input type="checkbox" class="toggle-input" id="config_nso_special" />
+    		  <span class="state state-off" aria-live="polite">Disabled</span>
+    		  <span class="state state-on" aria-hidden="true">Enabled</span>
+    		</label>
+    	  </td>
+    	  <td>Enable "Nintendo Switch Online" controller special modes.<br/>Default is <span id="default_nso_special">-</span></td>
+    	</tr>
+      </tbody>
+    </table>
+
+    <br/>
+    <p id="socd_info">
+      SOCD<br/>
+      xid, xinput, ps3 gcwiiu, and switchpro support SOCD OFF at the protocol level, but each game can handle it differently.<br/>
+      Other output modes do not support SOCD; when SOCD is OFF, the NEUTRAL rule will be used.<br/>
+      With the exception that on OUTPUT_HID and OUTPUT_MISTER it's possible to enable DPAD AS BUTTONS and combine it with SOCD OFF.<br/>
+    <p>
+
+  </div>
+
+
+<!--
+GC trigger 0 to 200
+Wii trigger 0 to 31 (5-bit?)
+-->
+
+<p>
+Input/Output requires saving.<br/>
+Any other setting can be tested in real-time with apply.
+</p>
+
+	  <button class="custom-button" id="apply_config">Apply</button>
+	  <button class="custom-button" id="save_config">Save</button>
+
+	  <br/><br/>
+  </div>
+  <div id="tab3" class="tab-content">
+	  <h4>Upload Files</h4>
+
+	  <table>
+	  <tr>
+	  <td>
+		<label for="file1">Private Key:</label><br/>
+		<input type="file" id="file1">
+	  <td>
+		<label for="file2">Serial:</label><br/>
+		<input type="file" id="file2">
+	  </td>
+	  <td>
+		<label for="file3">Signature:</label><br/>
+		<input type="file" id="file3">
+	  </td>
+	  </tr>
+	  
+	  	  
+	  
+	  </table>
+      <!--
+		<label>
+		  <input type="checkbox" id="enablekeys">
+		  Enable Keys
+		</label>
+        -->
+
+	  <!--<button onclick="readAllFiles()">Read Files</button>-->
+      <br/>
+	  <button class="custom-button" id="send">Upload</button>
+	  
+  </div>
+
+</div>
+  
+
+
+
+
+
+
+
+        </div>
+
+        <footer>
+            <div class="footer-text">
+                by Matheus Fraguas (sonik-br) &nbsp;
+                <img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23009739%22/%3E%3Cpolygon%20points%3D%22200%2C50%20350%2C150%20200%2C250%2050%2C150%22%20fill%3D%22%23FFCC29%22/%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22150%22%20r%3D%2260%22%20fill%3D%22%23002776%22/%3E%3C/svg%3E"
+                alt="Brazil Flag" width="20">
+                <br/>
+                <br/>
+                <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+                <script type='text/javascript'>
+                    kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'B0B0LV8LC');kofiwidget2.draw();
+                </script>
+            </div>
+
+        </footer>
+    </div>
+
+</body>
+
+<!-- Hotkeys BEGIN -->
+    <script>
+    /***** SHARED *****/
+    const INPUTS = [
+      { name: 'A',      mask: 1 <<  0 },
+      { name: 'B',      mask: 1 <<  1 },
+      { name: 'X',      mask: 1 <<  2 },
+      { name: 'Y',      mask: 1 <<  3 },
+      { name: 'L1',     mask: 1 <<  4 },
+      { name: 'R1',     mask: 1 <<  5 },
+      { name: 'L2',     mask: 1 <<  6 },
+      { name: 'R2',     mask: 1 <<  7 },
+      { name: 'L3',     mask: 1 <<  8 },
+      { name: 'R3',     mask: 1 <<  9 },
+      { name: 'START',  mask: 1 << 10 },
+      { name: 'SELECT', mask: 1 << 11 },
+      { name: 'HOME',   mask: 1 << 12 },
+      { name: 'CAPTURE',mask: 1 << 13 },
+      { name: 'PAD↑',   mask: 1 << 28 },
+      { name: 'PAD↓',   mask: 1 << 29 },
+      { name: 'PAD←',   mask: 1 << 30 },
+      { name: 'PAD→',   mask: 1 << 31 }
+    ];
+
+
+    /***** HOTKEY MAPPER *****/
+    const FUNCTIONS = [
+      'FN_BOOTSEL',
+      'FN_REBOOT',
+      'FN_DPAD_AS_BUTTONS'
+    ];
+    const hotkeys = {};           // fn -> mask
+    const hotkeySeconds = {};     // fn -> seconds
+
+    function buildHotkeyTable() {
+      const tbody = document.querySelector('#hotkeyTable tbody');
+      tbody.innerHTML = '';
+      FUNCTIONS.forEach(fn => {
+        hotkeys[fn] = 0;
+        hotkeySeconds[fn] = '';
+        const tr = document.createElement('tr');
+        tr.dataset.fn = fn;
+
+        tr.innerHTML = `
+          <td>${fn}</td>
+          <td>
+            <div class="keywrapper">
+              <div class="selected-btns"></div>
+              <button class="add-btn">+</button>
+              <div class="menu"></div>
+            </div>
+          </td>
+          <td><input type="text" class="seconds-input" value=""></td>
+          <td class="code">0x00000000</td>
+        `;
+
+        /*
+        // FN
+        const tdFn = document.createElement('td');
+        tdFn.textContent = fn;
+        tr.appendChild(tdFn);
+
+        // Hotkey selector
+        const tdKey = document.createElement('td');
+        tdKey.innerHTML = `
+          <div class="keywrapper">
+            <div class="selected-btns"></div>
+            <button class="add-btn">+</button>
+            <div class="menu"></div>
+          </div>`;
+        tr.appendChild(tdKey);
+
+        // Hex
+        const tdCode = document.createElement('td');
+        tdCode.className = 'code';
+        tdCode.textContent = '0x00000000';
+        tr.appendChild(tdCode);
+        */
+
+        tbody.appendChild(tr);
+      });
+
+      // Menus and listeners
+      document.querySelectorAll('#hotkeyTable .menu').forEach(menu => {
+        menu.innerHTML = '';
+        INPUTS.forEach(btn => {
+          const item = document.createElement('div');
+          item.className = 'btn-item';
+          item.textContent = btn.name;
+          item.dataset.mask = btn.mask;
+          item.addEventListener('click', () => {
+            const fn = menu.closest('tr').dataset.fn;
+            addHotkeyInput(fn, btn.mask);
+            menu.style.display = 'none';
+          });
+          menu.appendChild(item);
+        });
+      });
+
+      document.querySelectorAll('#hotkeyTable .add-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const menu = e.target.parentNode.querySelector('.menu');
+          menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+      });
+    }
+
+    function addHotkeyInput(fn, mask) {
+      hotkeys[fn] |= mask;
+      renderHotkeyRow(fn);
+    }
+
+    function removeHotkeyInput(fn, mask) {
+      hotkeys[fn] &= ~mask;
+      renderHotkeyRow(fn);
+    }
+
+    function renderHotkeyRow(fn) {
+      const tr = document.querySelector(`#hotkeyTable tr[data-fn="${fn}"]`);
+      const sel = tr.querySelector('.selected-btns');
+      sel.innerHTML = '';
+      const mask = hotkeys[fn];
+      INPUTS.forEach(btn => {
+        if (mask & btn.mask) {
+          const itm = document.createElement('div');
+          itm.className = 'btn-item';
+          itm.textContent = btn.name;
+          const x = document.createElement('span');
+          x.className = 'remove';
+          x.textContent = '×';
+          x.addEventListener('click', () => removeHotkeyInput(fn, btn.mask));
+          itm.appendChild(x);
+          sel.appendChild(itm);
+        }
+      });
+      tr.querySelector('.code').textContent =
+        '0x' + mask.toString(16).padStart(8, '0');
+    }
+
+    /***** BUTTONS HOTKEYS *****/
+    const REMAP_COUNT = 5;
+    const remaps = Array.from(
+      { length: REMAP_COUNT },
+      () => ({ inputs: 0, outputs: 0, exclusive: false, clear: false })
+    );
+
+    function buildRemapTable() {
+      const tbody = document.querySelector('#remapTable tbody');
+      tbody.innerHTML = '';
+      remaps.forEach((_, idx) => {
+        const tr = document.createElement('tr');
+        tr.dataset.index = idx;
+
+        // Input
+        const tdIn = document.createElement('td');
+        tdIn.innerHTML = `
+          <div class="keywrapper">
+            <div class="rem-selected" data-type="in"></div>
+            <button class="add-btn">+</button>
+            <div class="rem-menu" data-type="in"></div>
+          </div>`;
+        tr.appendChild(tdIn);
+
+        // Output
+        const tdOut = document.createElement('td');
+        tdOut.innerHTML = `
+          <div class="keywrapper">
+            <div class="rem-selected" data-type="out"></div>
+            <button class="add-btn">+</button>
+            <div class="rem-menu" data-type="out"></div>
+          </div>`;
+        tr.appendChild(tdOut);
+
+        // Exclusive
+        const tdExcl = document.createElement('td');
+        //tdExcl.innerHTML = `<input type="checkbox" class="exclusive-chk">`;
+		tdExcl.innerHTML = `
+        <label class="toggle">
+		  <input type="checkbox" class="toggle-input exclusive-chk" />
+		  <span class="state state-off" aria-live="polite">No</span>
+		  <span class="state state-on" aria-hidden="true">Yes</span>
+		</label>`;
+        tr.appendChild(tdExcl);
+
+        // Clear
+        const tdClr = document.createElement('td');
+        //tdClr.innerHTML = `<input type="checkbox" class="clear-chk">`;
+		tdClr.innerHTML = `
+        <label class="toggle">
+		  <input type="checkbox" class="toggle-input clear-chk" />
+		  <span class="state state-off" aria-live="polite">No</span>
+		  <span class="state state-on" aria-hidden="true">Yes</span>
+		</label>`;
+        tr.appendChild(tdClr);
+
+        // Move
+        const tdAct = document.createElement('td');
+        tdAct.innerHTML = `
+          <button class="move-btn" data-dir="up">▲</button>
+          <button class="move-btn" data-dir="down">▼</button>`;
+        tr.appendChild(tdAct);
+
+        // Input hex
+        const tdCodeIn = document.createElement('td');
+        tdCodeIn.className = 'code code-in';
+        tdCodeIn.textContent = '0x00000000';
+        tr.appendChild(tdCodeIn);
+
+        // Output hex
+        const tdCodeOut = document.createElement('td');
+        tdCodeOut.className = 'code code-out';
+        tdCodeOut.textContent = '0x00000000';
+        tr.appendChild(tdCodeOut);
+
+        tbody.appendChild(tr);
+      });
+
+      // Selection menus
+      document.querySelectorAll('#remapTable .rem-menu').forEach(menu => {
+        menu.innerHTML = '';
+        const type = menu.dataset.type;
+        INPUTS.forEach(btn => {
+          const item = document.createElement('div');
+          item.className = 'btn-item';
+          item.textContent = btn.name;
+          item.dataset.mask = btn.mask;
+          item.addEventListener('click', () => {
+            const idx = +menu.closest('tr').dataset.index;
+            if (type === 'in') addRemapInput(idx, btn.mask);
+            else               addRemapOutput(idx, btn.mask);
+            menu.style.display = 'none';
+          });
+          menu.appendChild(item);
+        });
+      });
+
+      // Listeners to open menus
+      document.querySelectorAll('#remapTable .add-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const keywrapper = e.target.closest('.keywrapper');
+          const menu = keywrapper.querySelector('.rem-menu');
+          menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+      });
+
+      // Listeners to move lines
+      document.querySelectorAll('#remapTable .move-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const tr = e.target.closest('tr');
+          const idx = +tr.dataset.index;
+          const dir = btn.dataset.dir;
+          if (dir === 'up' && idx > 0) swapRows(idx, idx - 1);
+          if (dir === 'down' && idx < REMAP_COUNT - 1) swapRows(idx, idx + 1);
+          buildRemapTable();
+        });
+      });
+
+      // Render each row
+      remaps.forEach((_, idx) => renderRemapRow(idx));
+    }
+
+    function renderRemapRow(idx) {
+      const tr = document.querySelector(`tr[data-index="${idx}"]`);
+      const { inputs, outputs } = remaps[idx];
+
+      // Print selected items
+      ['in', 'out'].forEach(type => {
+        const sel = tr.querySelector(`.rem-selected[data-type="${type}"]`);
+        sel.innerHTML = '';
+        const mask = type === 'in' ? inputs : outputs;
+        INPUTS.forEach(btn => {
+          if (mask & btn.mask) {
+            const itm = document.createElement('div');
+            itm.className = 'btn-item';
+            itm.textContent = btn.name;
+            const x = document.createElement('span');
+            x.className = 'remove';
+            x.textContent = '×';
+            x.addEventListener('click', () => {
+              if (type === 'in') removeRemapInput(idx, btn.mask);
+              else                 removeRemapOutput(idx, btn.mask);
+            });
+            itm.appendChild(x);
+            sel.appendChild(itm);
+          }
+        });
+      });
+
+      // Exclusive
+      const exclChk = tr.querySelector('.exclusive-chk');
+      exclChk.checked = remaps[idx].exclusive;
+      exclChk.onchange = () => {
+        remaps[idx].exclusive = exclChk.checked;
+      };
+      
+      // Clear
+      const clearChk = tr.querySelector('.clear-chk');
+      clearChk.checked = remaps[idx].clear;
+      clearChk.onchange = () => {
+        remaps[idx].clear = clearChk.checked;
+      };
+
+      // Update hex
+      tr.querySelector('.code-in').textContent =
+        '0x' + inputs.toString(16).padStart(8, '0');
+      tr.querySelector('.code-out').textContent =
+        '0x' + outputs.toString(16).padStart(8, '0');
+    }
+
+    function addRemapInput(idx, mask) {
+      remaps[idx].inputs |= mask;
+      renderRemapRow(idx);
+    }
+    function removeRemapInput(idx, mask) {
+      remaps[idx].inputs &= ~mask;
+      renderRemapRow(idx);
+    }
+    function addRemapOutput(idx, mask) {
+      remaps[idx].outputs |= mask;
+      renderRemapRow(idx);
+    }
+    function removeRemapOutput(idx, mask) {
+      remaps[idx].outputs &= ~mask;
+      renderRemapRow(idx);
+    }
+    function swapRows(a, b) {
+      [remaps[a], remaps[b]] = [remaps[b], remaps[a]];
+    }
+
+    function getFunctionArray() {
+      return FUNCTIONS.map(fn => ({
+        input:   hotkeys[fn] >>> 0,
+        seconds: hotkeySeconds[fn] || 0
+      }));
+    }
+
+    function getRemapArray() {
+      return remaps.map(({inputs, outputs, exclusive, clear}) => ({
+        input:  inputs >>> 0,
+        output: outputs >>> 0,
+        exclusive: exclusive,
+        clear: clear
+      }));
+    }
+
+    function getShortcutArray() {
+      const out = [];
+      for (let i = 0; i < output_shortcut_max; i++) {
+        const el = `config_outputmode_${INPUTS[i].name}`;
+        out.push(document.getElementById(el).selectedIndex);
+      }
+      return out;
+    }
+
+    // Init
+    buildHotkeyTable();
+    buildRemapTable();
+
+    // console.log(getRemapArray());
+
+
+    /**
+        * Update existing hotkey on interface.
+        */
+    function updateFromConfig(fnIndex, hexValue, secondsValue) {
+        const fn = FUNCTIONS[fnIndex];
+        const mask = typeof hexValue === 'string'
+        ? parseInt(hexValue, 16)
+        : hexValue;
+        hotkeys[fn] = mask >>> 0;
+        hotkeySeconds[fn] = secondsValue;
+    
+        renderHotkeyRow(fn);
+    
+        const tr = document.querySelector(`tr[data-fn="${fn}"]`);
+        tr.querySelector('.seconds-input').value = secondsValue;
+    }
+
+    /**
+     * Impor remap config and redraw table.
+     *
+     * @param {Array<{input:number,output:number,exclusive:boolean,clear:boolean}>} config
+     */
+    function importRemapConfig(config) {
+      remaps.forEach((r, i) => {
+        const e = config[i] || {};
+        r.inputs    = e.input    >>> 0;
+        r.outputs   = e.output   >>> 0;
+        r.exclusive = !!e.exclusive;
+        r.clear     = !!e.clear;
+      });
+    
+      // Rebuild table (reattach listeners) or:
+      // remaps.forEach((_, idx) => renderRemapRow(idx));
+      buildRemapTable();
+    }
+
+
+  </script>
+
+  <!-- Hotkeys END -->
+
+
+<script>
+
+//main tabs
+const buttons = document.querySelectorAll('.tab-button');
+const contents = document.querySelectorAll('.tab-content');
+let activeTab = 0;
+buttons.forEach(button => {
+    button.addEventListener('click', () => {
+    // Remove active class from all buttons and contents
+    buttons.forEach(btn => btn.classList.remove('active'));
+    contents.forEach(content => content.classList.remove('active'));
+    switch (button.dataset.tab) {
+        case "tab1": activeTab = 0; break;
+        case "tab2": activeTab = 1; break;
+        case "tab3": activeTab = 2; break;
+    }
+    // Add active class to clicked button and corresponding content
+    button.classList.add('active');
+    document.getElementById(button.dataset.tab).classList.add('active');
+    });
+});
+
+//sub tabs
+const buttons_sub = document.querySelectorAll('.tab-sub-button');
+const contents_sub = document.querySelectorAll('.tab-sub-content');
+buttons_sub.forEach(button => {
+    button.addEventListener('click', () => {
+    // Remove active class from all buttons and contents
+    buttons_sub.forEach(btn => btn.classList.remove('active'));
+    contents_sub.forEach(content => content.classList.remove('active'));
+    // Add active class to clicked button and corresponding content
+    button.classList.add('active');
+    document.getElementById(button.dataset.tab).classList.add('active');
+    });
+});
+
+
+
+	//hid commands
+	const cmd_auth_init = 0;
+	const cmd_auth_serial = 1;
+	const cmd_auth_signature = 2;
+	const cmd_auth_rsaN = 3;
+	const cmd_auth_rsaE = 4;
+	const cmd_auth_rsaP = 5;
+	const cmd_auth_rsaQ = 6;
+	const cmd_auth_save = 7;
+
+    const WEB_ID_INPUT_PAD             = 1;
+    const WEB_ID_GET_FIRMWARE_INFO     = 2;
+    const WEB_ID_SET_BOOTSEL           = 3;
+    const WEB_ID_GET_INPUTMODE_MASK    = 4;
+    const WEB_ID_GET_SET_KEYS          = 5;
+    const WEB_ID_GET_DEFAULT_SET_APPLY = 6;
+    const WEB_ID_GET_CURRENT_SET_SAVE  = 7;
+	const WEB_ID_GET_FNHOTKEYS  = 8;
+    const WEB_ID_GET_BTNHOTKEYS  = 9;
+    const WEB_ID_GET_OUTPUT_SHORTCUT = 10;
+    const WEB_ID_SET_COMMIT_EEPROM = 11;
+
+
+const input_mode_list = {
+  RZORD_DUMMY: {bit: 0, enabled: false},
+  RZORD_USB: {bit: 1, enabled: false},
+  RZORD_CUSTOM: {bit: 2, enabled: false},
+  RZORD_MEGADRIVE: {bit: 3, enabled: false},
+  RZORD_SATURN: {bit: 4, enabled: false},
+  RZORD_NES: {bit: 5, enabled: false},
+  RZORD_SNES: {bit: 6, enabled: false},
+  RZORD_VBOY: {bit: 7, enabled: false},
+  RZORD_PCE: {bit: 8, enabled: false},
+  RZORD_WII: {bit: 9, enabled: false},
+  RZORD_N64: {bit: 10, enabled: false},
+  RZORD_GBA: {bit: 11, enabled: false},
+  RZORD_GAMECUBE: {bit: 12, enabled: false},
+  RZORD_PSX: {bit: 13, enabled: false},
+  RZORD_PSX: {bit: 14, enabled: false},
+  RZORD_PSX_JOG: {bit: 15, enabled: false},
+  RZORD_NEOGEO: {bit: 16, enabled: false},
+  RZORD_3DO: {bit: 17, enabled: false},
+  RZORD_JAGUAR: {bit: 18, enabled: false},
+};
+//input_mode_list.RZORD_USB.enabled=true;
+//input_mode_list.RZORD_MEGADRIVE.enabled=true;
+
+/*const Config_Data_Input_Mode = Object.freeze(
+  Object.keys(input_mode_list).reduce((e, key) => {
+    e[key] = key;
+    return e;
+  }, {})
+);*/
+
+/*const Config_Data_Input_Mode = Object.freeze(
+  Object.keys(input_mode_list).reduce((enumObj, key, idx) => {
+    enumObj[key] = idx + 1;
+    return enumObj;
+  }, {})
+);*/
+
+const Config_Data_Input_Mode = Object.freeze(
+  Object.keys(input_mode_list)
+);
+
+const Config_Data_Output_Mode = Object.freeze({
+  OUTPUT_HID: 0,         // HID Generic
+  OUTPUT_MISTER: 1,          // MiSTer (HID)
+  OUTPUT_MISTER_JOGCON: 2,   // MiSTer Jogcon (HID)
+  OUTPUT_MISTER_NEGCON: 3,   // MiSTer Negcon (HID)
+  OUTPUT_MISTER_GUNCON: 4,   // MiSTer Guncon (HID)
+  OUTPUT_HID_JOGCONMOUSE: 5, // HID Jogcon gamepad+mouse
+  //OUTPUT_HID_GUNCONMOUSE: ,  // HID Guncon mouse
+  OUTPUT_XINPUT: 6,          // xbox360 (without auth, but works with UsbdSecPatch)
+  OUTPUT_XINPUTW: 7,          // xbox360 wireless receiver
+  OUTPUT_XID: 8,             // ogXbox (analog buttons)
+  OUTPUT_PS3: 9,             // dualshock3 (analog buttons)
+  OUTPUT_PS4: 10,             // requires auth. DS4 (v2) is supported
+  OUTPUT_PS5: 11,             // requires auth. DS4 does not work, requires specialized controller
+  OUTPUT_SWITCH: 12,          // pokken
+  OUTPUT_SWITCHPRO: 13,       // switch pro
+  OUTPUT_PANTHERLORD: 14,     // generic ps1/ps2 to usb adapter
+  OUTPUT_GCWIIU: 15,          // WUP-028
+  OUTPUT_MDMINI: 16,          // Megadrive Mini
+  //OUTPUT_WEBCONFIG: 17        // Webconfig
+});
+const LAST_MISTER_MODE = Config_Data_Output_Mode.OUTPUT_MISTER_GUNCON;
+
+const Config_Data_Type = Object.freeze({
+  COMMON: 0,
+  BOOL: 1,
+  MULTIPLE: 2
+});
+
+const Config_Data_Socd_Mode = Object.freeze({
+  SOCD_OFF: 0,
+  SOCD_NEUTRAL: 1,
+  SOCD_SECOND: 2,
+  SOCD_FIRST: 3,
+});
+
+const Config_Data_Ps4_Mode = Object.freeze({
+  PS4_GAMEPAD: 0,
+  PS4_ARCADESTICK: 1
+});
+
+
+const select = document.getElementById('config_devicemode');
+
+
+for (const [field, props] of Object.entries(input_mode_list)) {
+  const opt = new Option(field, '', false, false);
+  opt.disabled = true;
+  select.add(opt);
+}
+
+/*
+let counter = 0;
+for (const [field, props] of Object.entries(input_mode_list)) {
+  //console.log(`Field: ${field}`);
+  if (props.enabled) {
+	++counter;
+	console.log(`Counter ${counter}, Field: ${field}`);
+  }
+  // new Option(text, value, defaultSelected?, selected?)
+  const opt = new Option(field, props.enabled ? counter : '', false, false);
+  select.add(opt);
+  opt.disabled = !props.enabled;
+  //for (const [key, value] of Object.entries(props)) {
+  //  console.log(`  ${key}: ${value}`);
+  //}
+}
+*/
+
+//create shortcut table
+const output_shortcut_max = 6;
+//const config_mode_shortcut_list = [
+//    "config_outputmode_A",
+//    "config_outputmode_B",
+//    "config_outputmode_X",
+//    "config_outputmode_Y",
+//    "config_outputmode_L1",
+//    "config_outputmode_R1"
+//];
+const config_mode_shortcut_list_defaults = [
+    "OUTPUT_PS4",
+    "OUTPUT_HID",
+    "OUTPUT_XINPUT",
+    "OUTPUT_SWITCHPRO",
+    "OUTPUT_PS3",
+    "OUTPUT_GCWIIU"
+];
+{
+      const tbody = document.querySelector('#shortcutTable tbody');
+      tbody.innerHTML = '';
+      
+      //START button is fixed
+      const start_tr = document.createElement('tr');
+        start_tr.innerHTML = `
+	      <td>START</td>
+	      <td><select><option>OUTPUT_WEBCONFIG</option></select></td>
+	      <td>Output from the adapter.<br/>Can't be changed.</td>
+        `;
+      tbody.appendChild(start_tr);
+
+      for (let i = 0; i < output_shortcut_max; i++) {
+        const fn = `config_outputmode_${INPUTS[i].name}`;
+        const tr = document.createElement('tr');
+        tr.dataset.fn = fn;
+
+        tr.innerHTML = `
+	      <td>${INPUTS[i].name}</td>
+	      <td><select id="${fn}"></select></td>
+	      <td>Output from the adapter.<br/>Default is <span id="default_${fn}">${config_mode_shortcut_list_defaults[i]}</span></td>
+        `;
+        tbody.appendChild(tr);
+      }
+        
+}
+
+
+
+const select2 = document.getElementById('config_outputmode');
+for (const [key, value] of Object.entries(Config_Data_Output_Mode)) {
+  // new Option(text, value, defaultSelected?, selected?)
+  const opt = new Option(key, value, false, false);
+  if (value > Config_Data_Output_Mode.OUTPUT_MISTER && value <= LAST_MISTER_MODE)
+	opt.disabled = true;
+  select2.add(opt);
+
+  //do the same for the mode shortcuts
+  for (let i = 0; i < output_shortcut_max; i++) {
+      const el = `config_outputmode_${INPUTS[i].name}`;
+      const select_sub = document.getElementById(el);
+      const opt_sub = new Option(key, value, false, false);
+      if (value > Config_Data_Output_Mode.OUTPUT_MISTER && value <= LAST_MISTER_MODE)
+	    opt_sub.disabled = true;
+      select_sub.add(opt_sub);
+  }
+}
+
+
+
+
+//id is used as byte-index
+const config_data = [
+  { id: 1,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Input_Mode,  name: 'devicemode', el_config: document.getElementById('config_devicemode'), el_default: document.getElementById('default_devicemode') },
+  { id: 2,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE,   enumRef: Config_Data_Output_Mode, name: 'outputmode', el_config: document.getElementById('config_outputmode'), el_default: document.getElementById('default_outputmode') },
+  { id: 3,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Socd_Mode,   name: 'socdmode', el_config: document.getElementById('config_socdmode'), el_default: document.getElementById('default_socdmode') },
+  { id: 4,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					   name: 'deadzone_percent', el_config: document.getElementById('config_deadzone_percent'), el_default: document.getElementById('default_deadzone_percent') },
+  { id: 5,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'dpad_as_buttons', el_config: document.getElementById('config_dpad_as_buttons'), el_default: document.getElementById('default_dpad_as_buttons') },
+  { id: 6,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'nso_special', el_config: document.getElementById('config_nso_special'), el_default: document.getElementById('default_nso_special') },
+  { id: 7,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Ps4_Mode,    name: 'ps4_mode', el_config: document.getElementById('config_ps4_mode'), el_default: document.getElementById('default_ps4_mode') },
+  { id: 8,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'enable_ps4key', el_config: document.getElementById('config_enable_ps4key'), el_default: document.getElementById('default_enable_ps4key') },
+  { id: 9,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_n64', el_config: document.getElementById('config_analog_max_n64'), el_default: document.getElementById('default_analog_max_n64') },
+  { id: 10, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_gc', el_config: document.getElementById('config_analog_max_gc'), el_default: document.getElementById('default_analog_max_gc') },
+];
+
+	//hid device
+	let device;
+	
+	//auth data
+	var SerialBytes = new Uint8Array(16);
+	var SignatureBytes = new Uint8Array(256);
+	var NBytes = new Uint8Array(256);
+	var EBytes = new Uint8Array(4);
+	var PBytes = new Uint8Array(128);
+	var QBytes = new Uint8Array(128);
+
+	const SHA256 = (ascii) => {
+		function rightRotate(value, amount) {
+			return (value >>> amount) | (value << (32 - amount));
+		}
+
+		const mathPow = Math.pow;
+		const maxWord = mathPow(2, 32);
+		const lengthProperty = 'length';
+		let i; // Used as a counter across the whole file
+		let j; // Used as a counter across the whole file
+		var result = '';
+
+		const words = [];
+		const asciiBitLength = ascii[lengthProperty] * 8;
+
+		//* caching results is optional - remove/add slash from front of this line to toggle
+		// Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
+		// (we actually calculate the first 64, but extra values are just ignored)
+		var hash = (SHA256.h = SHA256.h || []);
+		// Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
+		const k = (SHA256.k = SHA256.k || []);
+		let primeCounter = k[lengthProperty];
+		/*/
+			var hash = [], k = [];
+			var primeCounter = 0;
+			//*/
+
+		const isComposite = {};
+		for (let candidate = 2; primeCounter < 64; candidate++) {
+			if (!isComposite[candidate]) {
+				for (i = 0; i < 313; i += candidate) {
+					isComposite[i] = candidate;
+				}
+				hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+				k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+			}
+		}
+
+		ascii += '\x80'; // Append Ƈ' bit (plus zero padding)
+		while ((ascii[lengthProperty] % 64) - 56) ascii += '\x00'; // More zero padding
+		for (i = 0; i < ascii[lengthProperty]; i++) {
+			j = ascii.charCodeAt(i);
+			if (j >> 8) return; // ASCII check: only accept characters in range 0-255
+			words[i >> 2] |= j << (((3 - i) % 4) * 8);
+		}
+		words[words[lengthProperty]] = (asciiBitLength / maxWord) | 0;
+		words[words[lengthProperty]] = asciiBitLength;
+
+		// process each chunk
+		for (j = 0; j < words[lengthProperty]; ) {
+			const w = words.slice(j, (j += 16)); // The message is expanded into 64 words as part of the iteration
+			const oldHash = hash;
+			// This is now the undefinedworking hash", often labelled as variables a...g
+			// (we have to truncate as well, otherwise extra entries at the end accumulate
+			hash = hash.slice(0, 8);
+
+			for (i = 0; i < 64; i++) {
+				const i2 = i + j;
+				// Expand the message into 64 words
+				// Used below if
+				const w15 = w[i - 15];
+				const w2 = w[i - 2];
+
+				// Iterate
+				const a = hash[0];
+				const e = hash[4];
+				const temp1 =
+					hash[7] +
+					(rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + // S1
+					((e & hash[5]) ^ (~e & hash[6])) + // ch
+					k[i] +
+					// Expand the message schedule if needed
+					(w[i] =
+						i < 16
+							? w[i]
+							: (w[i - 16] +
+									(rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + // s0
+									w[i - 7] +
+									(rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | // s1
+							  0);
+				// This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
+				const temp2 =
+					(rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + // S0
+					((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2])); // maj
+
+				hash = [(temp1 + temp2) | 0].concat(hash); // We don't bother trimming off the extra ones, they're harmless as long as we're truncating when we do the slice()
+				hash[4] = (hash[4] + temp1) | 0;
+			}
+
+			for (i = 0; i < 8; i++) {
+				hash[i] = (hash[i] + oldHash[i]) | 0;
+			}
+		}
+
+		for (i = 0; i < 8; i++) {
+			for (j = 3; j + 1; j--) {
+				const b = (hash[i] >> (j * 8)) & 255;
+				result += (b < 16 ? 0 : '') + b.toString(16);
+			}
+		}
+		return result;
+	}; // end SHA256
+
+
+	function int2mbedmpi(num) {
+		const out = [];
+		const mask = BigInt('4294967295');
+		const zero = BigInt('0');
+		while (num !== zero) {
+			out.push((num & mask).toString(16).padStart(8, '0'));
+			num = num >> BigInt(32);
+		}
+		return out;
+	}
+
+	function mbedmpi2b64(mpi) {
+		const arr = new Uint8Array(mpi.length * 4);
+		let cnt = 0;
+		for (let i = 0; i < mpi.length; i++) {
+			const bytes = hexToBytes(mpi[i]);
+			for (let j = 4; j > 0; j--) {
+				//arr[cnt] = bytes[j];
+				// TEST: re-order from LSB to MSB
+				arr[cnt] = bytes[j - 1];
+				cnt++;
+			}
+		}
+
+		return btoa(String.fromCharCode.apply(null, arr));
+	}
+
+	function hexToBytes(hex) {
+		const bytes = [];
+		for (let c = 0; c < hex.length; c += 2)
+			bytes.push(parseInt(hex.substr(c, 2), 16));
+		return bytes;
+	}
+
+
+const analog_stick_precision = {
+  ANALOG_STICK_PRECISION_8: 0,
+  ANALOG_STICK_PRECISION_12: 1,
+  ANALOG_STICK_PRECISION_16: 2
+};
+
+function normalizeStick(value, precision) {
+  switch (precision) {
+    case analog_stick_precision.ANALOG_STICK_PRECISION_8:
+      return (value + 128) / 255 * 2 - 1;
+    case analog_stick_precision.ANALOG_STICK_PRECISION_12:
+      return (value + 2048) / 4095 * 2 - 1;
+    case analog_stick_precision.ANALOG_STICK_PRECISION_16:
+      return (value + 32768) / 65535 * 2 - 1;
+    default:
+      return 0;
+  }
+}
+
+
+
+function parseUsboutInputReport(view) {
+  let offset = 0;
+
+  const configByte = view.getUint8(offset++);
+  const config = {
+    HAS_BTN_HOME: !!(configByte & 0b00000001),
+    HAS_BTN_SELECT: !!(configByte & 0b00000010),
+    HAS_BTN_START: !!(configByte & 0b00000100),
+    HAS_ANALOG_STICK_MAIN: !!(configByte & 0b00001000),
+    HAS_ANALOG_STICK_AUX: !!(configByte & 0b00010000),
+    HAS_ANALOG_TRIGGERS: !!(configByte & 0b00100000),
+    HAS_ANALOG_MAIN_BUTTONS: !!(configByte & 0b01000000),
+    HAS_ANALOG_DPAD: !!(configByte & 0b10000000),
+  };
+
+  const connected = !!view.getUint8(offset++);
+  const pending_send = !!view.getUint8(offset++);
+  const sticks_precision_bits = view.getUint8(offset++);
+
+  const digital_buttons = view.getUint32(offset, true);
+  offset += 4;
+
+  const digital = {
+    A: !!(digital_buttons & (1 << 0)),
+    B: !!(digital_buttons & (1 << 1)),
+    X: !!(digital_buttons & (1 << 2)),
+    Y: !!(digital_buttons & (1 << 3)),
+    L1: !!(digital_buttons & (1 << 4)),
+    R1: !!(digital_buttons & (1 << 5)),
+    L2: !!(digital_buttons & (1 << 6)),
+    R2: !!(digital_buttons & (1 << 7)),
+    L3: !!(digital_buttons & (1 << 8)),
+    R3: !!(digital_buttons & (1 << 9)),
+    START: !!(digital_buttons & (1 << 10)),
+    SELECT: !!(digital_buttons & (1 << 11)),
+    HOME: !!(digital_buttons & (1 << 12)),
+    CAPTURE: !!(digital_buttons & (1 << 13)),
+    EXTRA: (digital_buttons >> 14) & 0x3FFF,
+    PAD_U: !!(digital_buttons & (1 << 28)),
+    PAD_D: !!(digital_buttons & (1 << 29)),
+    PAD_L: !!(digital_buttons & (1 << 30)),
+    PAD_R: !!(digital_buttons & (1 << 31)),
+  };
+
+  const analog_sticks = {
+    LX: view.getInt16(offset, true), offset: offset += 2,
+    LY: view.getInt16(offset, true), offset: offset += 2,
+    RX: view.getInt16(offset, true), offset: offset += 2,
+    RY: view.getInt16(offset, true), offset: offset += 2,
+  };
+
+  const analog_buttons = {
+    ANALOG_L2: view.getUint8(offset++),
+    ANALOG_R2: view.getUint8(offset++),
+    ANALOG_A: view.getUint8(offset++),
+    ANALOG_B: view.getUint8(offset++),
+    ANALOG_X: view.getUint8(offset++),
+    ANALOG_Y: view.getUint8(offset++),
+    ANALOG_L1: view.getUint8(offset++),
+    ANALOG_R1: view.getUint8(offset++),
+  };
+
+  const analog_pad = {
+    ANALOG_PAD_U: view.getUint8(offset++),
+    ANALOG_PAD_D: view.getUint8(offset++),
+    ANALOG_PAD_L: view.getUint8(offset++),
+    ANALOG_PAD_R: view.getUint8(offset++),
+  };
+
+  const paddle = view.getUint8(offset++);
+  const spinner = view.getInt8(offset++);
+  const mouse_x = view.getInt8(offset++);
+  const mouse_y = view.getInt8(offset++);
+  const mouse_wheel_x = view.getInt8(offset++);
+  const mouse_wheel_y = view.getInt8(offset++);
+
+  // Merge all union fields into top-level object
+  return {
+    config,
+    connected,
+    pending_send,
+    sticks_precision_bits,
+
+	digital_buttons,
+
+    digital,
+    ...digital, // flatten digital buttons
+
+    analog_sticks,
+    ...analog_sticks, // flatten analog sticks
+
+    analog_buttons,
+    ...analog_buttons, // flatten analog buttons
+
+    analog_pad,
+    ...analog_pad, // flatten analog dpad
+
+    paddle,
+    spinner,
+    mouse_x,
+    mouse_y,
+    mouse_wheel_x,
+    mouse_wheel_y,
+  };
+}
+
+
+
+
+
+
+function base64ToByteArray(base64) {
+  const binaryString = atob(base64); // Decode Base64 to binary string
+  const byteArray = new Uint8Array(binaryString.length);
+
+  for (let i = 0; i < binaryString.length; i++) {
+    byteArray[i] = binaryString.charCodeAt(i);
+  }
+
+  return byteArray;
+}
+
+function saveByteArrayAsFile(byteArray, fileName) {
+  const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+
+  // Clean up
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function readFileAsTextAsync(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+
+    reader.readAsText(file); // You can also use readAsArrayBuffer, readAsDataURL, etc.
+  });
+}
+
+async function readFileAsBinaryStringAsync(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+
+    reader.readAsBinaryString(file); // You can also use readAsArrayBuffer, readAsDataURL, etc.
+  });
+}
+
+
+    async function readAllFiles() {
+      const fileInputs = [
+        document.getElementById('file1'),
+        document.getElementById('file2'),
+        document.getElementById('file3')
+      ];
+
+      const fileContents = [null, null, null];
+      let filesRead = 0;
+
+      //fileInputs.forEach((input, index) => {
+	  for (const [index, input] of fileInputs.entries()) {
+        const file = input.files[0];
+        if (!file) {
+          console.warn(`File ${index + 1} not selected.`);
+          throw new Error(`File ${index + 1} not selected.`);
+        }
+
+        //const reader = new FileReader();
+
+        //reader.onload = function(e) {
+          //fileContents[index] = e.target.result;
+			if (index == 2)
+				fileContents[index] = await readFileAsBinaryStringAsync(file);//reader.readAsBinaryString(file)
+			else
+				fileContents[index] = await readFileAsTextAsync(file);//reader.readAsText(file);
+          filesRead++;
+
+          // Once all files are read, log them
+          if (filesRead === 3) {
+
+			// Make sure our signature is 256 bytes
+            const pem = fileContents[0];
+            const serialFileContent = fileContents[1];
+            const signature = fileContents[2];
+
+			const serialNoPadding = serialFileContent.trimRight();
+			if (signature.length !== 256 || serialNoPadding.length !== 16) {
+				throw new Error('Signature or serial is invalid');
+			}
+			const serial = serialNoPadding.padStart(32, '0'); // Add our padding
+
+            const key = new JSEncrypt();
+			key.setPrivateKey(pem);
+			const bytes = new Uint8Array(256);
+			for (let i = 0; i < 256; i++) {
+				bytes[i] = Math.random() * 255;
+			}
+			const hashed = SHA256(bytes);
+			const signNonce = key.sign(hashed, SHA256, 'sha256');
+
+			if (signNonce === false) {
+				throw new Error('Bad Private Key');
+			}
+
+						// Private key worked!
+
+			// Translate these to BigInteger
+			const N = BigInt(String(key.key.n));
+			const E = BigInt(String(key.key.e));
+			const P = BigInt(String(key.key.p));
+			const Q = BigInt(String(key.key.q));
+
+			const serialBin = hexToBytes(serial);
+
+
+			//As base64
+            //console.log('N:\n', mbedmpi2b64(int2mbedmpi(N)));
+			//console.log('E:\n', mbedmpi2b64(int2mbedmpi(E)));
+			//console.log('P:\n', mbedmpi2b64(int2mbedmpi(P)));
+			//console.log('Q:\n', mbedmpi2b64(int2mbedmpi(Q)));
+			//console.log('SERIAL:\n', btoa(String.fromCharCode(...new Uint8Array(serialBin))));
+			//console.log('SIGNATURE:\n', btoa(signature));
+
+			//As bytearray
+            //console.log('N:\n', base64ToByteArray(mbedmpi2b64(int2mbedmpi(N))));
+			//console.log('E:\n', base64ToByteArray(mbedmpi2b64(int2mbedmpi(E))));
+			//console.log('P:\n', base64ToByteArray(mbedmpi2b64(int2mbedmpi(P))));
+			//console.log('Q:\n', base64ToByteArray(mbedmpi2b64(int2mbedmpi(Q))));
+			//console.log('SERIAL:\n', hexToBytes(serial));
+			//console.log('SIGNATURE:\n', base64ToByteArray(btoa(signature)));
+
+			SerialBytes = hexToBytes(serial);
+			SignatureBytes = base64ToByteArray(btoa(signature));
+			NBytes = base64ToByteArray(mbedmpi2b64(int2mbedmpi(N)));
+			EBytes = base64ToByteArray(mbedmpi2b64(int2mbedmpi(E)));
+			PBytes = base64ToByteArray(mbedmpi2b64(int2mbedmpi(P)));
+			QBytes = base64ToByteArray(mbedmpi2b64(int2mbedmpi(Q)));
+
+			//saveByteArrayAsFile(hexToBytes(serial), 'ps_serial.bin');
+
+
+
+			//console.log('N BYTES:\n', base64ToByteArray(mbedmpi2b64(int2mbedmpi(N))));
+			//console.log('SERIAL BYTES:\n', hexToBytes(serial));
+            //console.log('SIG FILE:\n', fileContents[2]);
+
+			/*
+			const success = await WebApi.setPS4Options({
+				N: mbedmpi2b64(int2mbedmpi(N)),
+				E: mbedmpi2b64(int2mbedmpi(E)),
+				P: mbedmpi2b64(int2mbedmpi(P)),
+				Q: mbedmpi2b64(int2mbedmpi(Q)),
+				serial: btoa(String.fromCharCode(...new Uint8Array(serialBin))),
+				signature: btoa(signature),
+			});
+
+			if (success) {
+				console.log('Verified and Saved PS4 Keys!');
+			} else {
+				throw Error('ERROR: Failed to upload the key to the board');
+				*/
+
+            //console.log('KEY FILE:\n', fileContents[0]);
+            //console.log('SERIAL FILE:\n', fileContents[1]);
+            //console.log('SIG FILE:\n', fileContents[2]);
+
+
+            //console.log('SERIAL:\n', serial);
+          }
+        //};
+
+        //reader.onerror = function(e) {
+        //  console.error(`Error reading file ${file.name}:`, e);
+        //};
+
+        //if (index == 2)
+        //    reader.readAsBinaryString(file)
+        //else
+        //    reader.readAsText(file);
+      }//});
+    }
+
+
+
+
+function updateGamepadUI(state) {
+  const digital = state.digital;
+  const analog = state.analog_buttons;
+  const precision = state.sticks_precision_bits;
+  const sticks = state.analog_sticks;
+
+  const btnElems = document.querySelectorAll('[data-btn]');
+
+  // Digital buttons
+  const digitalKeys = ['A', 'B', 'X', 'Y', 'L1', 'R1', 'L2', 'R2', 'L3', 'R3', 'SELECT', 'START', 'HOME', 'CAPTURE', 'PAD_U', 'PAD_D', 'PAD_L', 'PAD_R'];
+  digitalKeys.forEach(key => {
+    //const el = document.getElementById(key);
+    //el.style.background = state[key] ? '#0f0' : '#555';
+	btnElems.forEach(button => {
+		if (button.dataset.btn == key) {
+			button.style.background = state[key] ? '#0f0' : '#555';
+		}
+	});
+  });
+
+  // Analog triggers
+  //todo add all analog buttons too
+  const L2 = document.getElementById('ANALOG_L2');
+  const R2 = document.getElementById('ANALOG_R2');
+  L2.style.background = `rgb(${analog.ANALOG_L2 * 2}, 100, 100)`;
+  R2.style.background = `rgb(${analog.ANALOG_R2 * 2}, 100, 100)`;
+
+  // Analog sticks
+  const leftStick = document.getElementById('leftStick');
+  const rightStick = document.getElementById('rightStick');
+  //const norm = (val) => Math.max(-1, Math.min(1, val / 32767));
+  //leftStick.style.transform = `translate(${norm(sticks.LX) * 20}px, ${norm(sticks.LY) * 20}px)`;
+  //rightStick.style.transform = `translate(${norm(sticks.RX) * 20}px, ${norm(sticks.RY) * 20}px)`;
+leftStick.style.transform = `translate(${normalizeStick(sticks.LX, precision) * 20}px, ${normalizeStick(sticks.LY, precision) * 20}px)`;
+rightStick.style.transform = `translate(${normalizeStick(sticks.RX, precision) * 20}px, ${normalizeStick(sticks.RY, precision) * 20}px)`;
+
+var normalizedLX = normalizeStick(sticks.LX, precision);
+var normalizedLY = normalizeStick(sticks.LY, precision);
+const roundedLX = normalizedLX.toFixed(2);//Math.round(normalizedLX * 100) / 100;
+const roundedLY = normalizedLY.toFixed(2);//Math.round(normalizedLX * 100) / 100;
+
+
+const moveThumb = (id, xNorm, yNorm) => {
+	const thumb = document.getElementById(id);
+	if (thumb) {
+		const radius = 40; // max movement in pixels from center
+		thumb.style.left = `${40 + xNorm * radius}px`;
+		thumb.style.top  = `${40 + yNorm * radius}px`; // remove the minus to match CSS direction
+	}
+};
+
+moveThumb('thumb-LX', normalizedLX, normalizedLY);
+//moveThumb('thumb-RX', rx, ry);
+
+const fmtFract = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: false,
+  signDisplay: 'always'
+});
+const fmtInt = new Intl.NumberFormat('en-US', {
+  minimumIntegerDigits: 5,
+  useGrouping: false,
+  signDisplay: 'always'
+});
+
+const sinfo = document.getElementById('stick_info');
+//sinfo.innerText = `X ${normalizedLX < 0 ? '' : '+' }${roundedLX} (${sticks.LX})\nY ${normalizedLY < 0 ? '' : '+' }${roundedLY} (${sticks.LY})`;
+sinfo.innerText = `${fmtFract.format(roundedLX)} (${fmtInt.format(sticks.LX)})\n${fmtFract.format(roundedLY)} (${fmtInt.format(sticks.LY)})`;
+//console.log(`LX ${sticks.LX}, NORM ${normalizeStick(sticks.LX, precision)}`);
+}
+
+
+async function disconnect() {
+        if (device && device.opened) {
+            await device.close();
+            //device.removeEventListener("inputreport", onInputReport);
+        }
+		//document.getElementById("files").style.display = "none";
+		document.getElementById("connect").style.display = "inline-block";
+		document.getElementById("connected_device").style.display = "none";
+        console.warn("HID device disconnected:", device.productName);
+}
+
+navigator.hid.addEventListener("disconnect", async (event) => {
+    const d = event.device;
+    if (d == device) {
+		await disconnect();
+		/*
+        if (device && device.opened) {
+            await device.close();
+            //device.removeEventListener("inputreport", onInputReport);
+        }
+		//document.getElementById("files").style.display = "none";
+		document.getElementById("connected_device").style.display = "none";
+        console.warn("HID device disconnected:", d.productName);
+		*/
+    }
+
+});
+
+document.getElementById('disconnect').addEventListener('click', async () => {
+	await disconnect();
+});
+    
+
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        const filters = [{
+          vendorId:  0x1209,
+		  productId: 0x595A,
+		  usagePage: 0xFF00,
+		  usage:     0x0141
+        }];
+//const uint16_t RZORD1_VID = 0x1209;
+//const uint16_t RZORD1_PID = 0x595A;
+//const uint16_t RZORD1_VERSION = 0x0100;
+
+        const devices = await navigator.hid.requestDevice({ filters });
+        if (devices.length === 0) {
+          alert("No device selected.");
+          return;
+        }
+
+        device = devices[0];
+        await device.open();
+        //console.log("Device opened:", device.productName);
+		//let reportId = 1;
+const data_1 = await device.receiveFeatureReport(WEB_ID_GET_FIRMWARE_INFO);
+
+// Parse the returned DataView
+const byteArray1 = new Uint8Array(data_1.buffer);
+//byteArray[0] == 1 report id
+console.log("Feature Report Data:", byteArray1);
+
+const platform_sub = byteArray1[1] & 0x0F;
+const platform = (byteArray1[1] >> 4) | ((byteArray1[2] & 0x03) << 4);
+const revision = (byteArray1[2] >> 2) & 0x3F;
+console.log("Firmware revision:", revision);
+console.log("Platform:", platform);
+console.log("Platform_sub:", platform_sub);
+
+
+const paragraph = document.getElementById('device_info');
+paragraph.innerText = `Firmware revision: ${revision}`;
+
+
+
+
+
+
+//reportId = 8; // get input mask
+const data_8 = await device.receiveFeatureReport(WEB_ID_GET_INPUTMODE_MASK);
+const byteArray8 = new Uint8Array(data_8.buffer);
+//console.log("Report 8. Input mask: ", byteArray8);
+const view = new DataView(
+  byteArray8.buffer,
+  byteArray8.byteOffset + 1,  // skip the report-ID byte
+  4                           // only need 4 bytes for uint32
+);
+// assume little-endian (x86 writes LSB first)
+let value32 = view.getUint32(0, true);
+console.log("Report 8. Input mask: ", value32);
+
+/*
+for (let i = 0; i < 10; i++) {
+	console.log(`${i} current=${(value32 & (1 << i))}`);
+}
+*/
+
+for (const [field, props] of Object.entries(input_mode_list)) {
+  //console.log(`Field: ${field}`);
+  props.enabled = (value32 & (1 << props.bit)) ? true : false;
+  console.log(value32 & (1 << props.bit));
+  
+  //for (const [key, value] of Object.entries(props)) {
+  //  console.log(`  ${key}: ${value}`);
+  //}
+}
+
+console.log(input_mode_list);
+
+
+
+
+let counter = 0;
+const opts = Array.from(select.options);
+
+opts.forEach((opt) => {
+  opt.disabled = true;	
+  opt.value = '';
+});
+
+
+for (const [field, props] of Object.entries(input_mode_list)) {
+  //console.log(`Field: ${field}`);
+  if (props.enabled) {
+	++counter;
+	console.log(`Counter ${counter}, Field: ${field}`);
+  }
+  const match = opts.find(
+    opt => opt.textContent.trim() === field
+  );
+  match.disabled = !props.enabled;
+  match.value = props.enabled ? counter : '';
+  // new Option(text, value, defaultSelected?, selected?)
+  //const opt = new Option(field, props.enabled ? counter : '', false, false);
+  //select.add(opt);
+  //opt.disabled = !props.enabled;
+  //for (const [key, value] of Object.entries(props)) {
+  //  console.log(`  ${key}: ${value}`);
+  //}
+}
+
+
+
+//reportId = 6; // get default values
+const data_6 = await device.receiveFeatureReport(WEB_ID_GET_DEFAULT_SET_APPLY);
+const byteArray6 = new Uint8Array(data_6.buffer);
+console.log("Report 6. Default config: ", byteArray6);
+config_data.forEach(c => {
+  c.default = byteArray6[c.id];
+  if (c.data_type == Config_Data_Type.BOOL)
+	c.el_default.innerText = c.default ? "Enabled" : "Disabled";
+  else if (c.data_type == Config_Data_Type.MULTIPLE && c.enumRef)
+	c.el_default.innerText = Object.entries(c.enumRef).find(([k, v]) => v === c.default)?.[0];
+  else
+    c.el_default.innerText = c.default;
+
+
+	if (c.data_type == Config_Data_Type.MULTIPLE && c.enumRef && c.enumRef === Config_Data_Input_Mode) {
+		let counter = 0;
+		//default is the index of the enabled input modes
+		//alert(byteArray6[c.id]);
+
+		for (let i = 0; i < select.options.length; i++) {
+		  const opt = select.options[i];
+		  //console.log(i, opt.value, opt.text);
+		  if (!opt.disabled) {
+			  ++counter;
+			  if (counter == c.default) {
+				c.el_default.innerText = opt.textContent;
+			  }
+		  }
+		}
+
+	}
+
+});
+
+//config_data
+//enumRef: Config_Data_Input_Mode
+//Config_Data_Input_Mode
+
+//reportId = 7; // get current values
+const data_7 = await device.receiveFeatureReport(WEB_ID_GET_CURRENT_SET_SAVE);
+const byteArray7 = new Uint8Array(data_7.buffer);
+console.log("Report 7. Current config: ", byteArray7);
+config_data.forEach(c => {
+  c.initial = byteArray7[c.id];
+  c.current = c.initial;
+  if (c.data_type == Config_Data_Type.BOOL)
+	c.el_config.checked = c.initial ? true : false;
+  else
+    c.el_config.value = c.initial;
+});
+
+const data_fnhotkeys = await device.receiveFeatureReport(WEB_ID_GET_FNHOTKEYS);
+const byteArray_fnhotkeys = new Uint8Array(data_fnhotkeys.buffer);
+console.log("Report 8. FN Hotkeys: ", byteArray_fnhotkeys);
+
+
+const function_data_size = 5; // buttons (4 bytes), seconds (1 byte)
+const fnhotkeys_view = new DataView(
+  byteArray_fnhotkeys.buffer,
+  byteArray_fnhotkeys.byteOffset + 1,
+  function_data_size * FUNCTIONS.length
+);
+
+for (let i = 0; i < FUNCTIONS.length; i++) {
+	const offset = i * function_data_size;
+	const _buttons = fnhotkeys_view.getUint32(offset, true);
+	const _seconds = fnhotkeys_view.getUint8(offset+4, true);
+    updateFromConfig(i, _buttons, _seconds);
+}
+
+
+const buttons_data_size = 10; // hotkey (4 bytes), result (4 bytes), exclusive (1 byte), clear (1 byte)
+const data_btnhotkeys = await device.receiveFeatureReport(WEB_ID_GET_BTNHOTKEYS);
+const byteArray_btnhotkeys = new Uint8Array(data_btnhotkeys.buffer);
+console.log("Report 9. BTN Hotkeys: ", byteArray_btnhotkeys);
+const btnhotkeys_view = new DataView(
+  byteArray_btnhotkeys.buffer,
+  byteArray_btnhotkeys.byteOffset + 1,
+  buttons_data_size * REMAP_COUNT
+);
+
+const config_remap = Array.from(
+  { length: REMAP_COUNT },
+  () => ({ input: 0, output: 0, exclusive: false, clear: false })
+);
+for (let i = 0; i < REMAP_COUNT; i++) {
+	const offset = i * buttons_data_size;
+    config_remap[i].input = btnhotkeys_view.getUint32(offset, true);
+    config_remap[i].output = btnhotkeys_view.getUint32(offset+4, true);
+    config_remap[i].exclusive = btnhotkeys_view.getUint8(offset+8, false) ? true : false;
+    config_remap[i].clear = btnhotkeys_view.getUint8(offset+9, false) ? true : false;
+}
+importRemapConfig(config_remap);
+
+
+
+const data_outputshortcuts = await device.receiveFeatureReport(WEB_ID_GET_OUTPUT_SHORTCUT);
+const byteArray_outputshortcuts = new Uint8Array(data_outputshortcuts.buffer);
+console.log("Report 10. Shortcuts: ", byteArray_outputshortcuts);
+
+for (let i = 0; i < output_shortcut_max; i++) {
+  const el = `config_outputmode_${INPUTS[i].name}`;
+  const select_sub = document.getElementById(el);
+  select_sub.selectedIndex = byteArray_outputshortcuts[i+1];
+}
+
+
+if(revision == 1)
+	console.log("Supported firmware.");
+else
+	console.log("NON supported firmware.");
+
+
+// if supported...
+document.getElementById("connect").style.display = "none";
+document.getElementById("connected_device").style.display = "block";
+
+
+      } catch (err) {
+        console.error("Connection error:", err);
+		document.getElementById("connected_device").style.display = "none";
+      }
+	  //await device.close();
+	  //return;
+device.addEventListener("inputreport", (event) => {
+  const { data, reportId } = event;
+  //const value = data.getUint8(0); // Example: read first byte
+  //console.log(`Input report ${reportId}: ${value}`);
+  //console.log(`Report ID ${reportId}:`, new Uint8Array(data.buffer));
+  const view = new DataView(event.data.buffer);
+  const gamepadState = parseUsboutInputReport(view);
+  updateGamepadUI(gamepadState);
+  //console.log("gamepadState.connected", gamepadState.connected);
+  if (gamepadState.connected) {
+	  //console.log(gamepadState.digital_buttons);
+//const width = 32;
+//const hexPadded = gamepadState.digital_buttons.toString(16).padStart(width, '0');
+//const binPadded = gamepadState.digital_buttons.toString(2).padStart(width, '0');
+//console.log('0x' + hexPadded);
+//console.log('0b' + binPadded);
+
+
+
+    //console.log("config.HAS_BTN_HOME", gamepadState.config.HAS_BTN_HOME);
+    //console.log("config.HAS_BTN_SELECT", gamepadState.config.HAS_BTN_SELECT);
+    //console.log("config.HAS_BTN_START", gamepadState.config.HAS_BTN_START);
+    //console.log("config.HAS_ANALOG_STICK_MAIN", gamepadState.config.HAS_ANALOG_STICK_MAIN);
+    //console.log("config.HAS_ANALOG_STICK_AUX", gamepadState.config.HAS_ANALOG_STICK_AUX);
+    //console.log("config.HAS_ANALOG_TRIGGERS", gamepadState.config.HAS_ANALOG_TRIGGERS);
+    //console.log("config.HAS_ANALOG_MAIN_BUTTONS", gamepadState.config.HAS_ANALOG_MAIN_BUTTONS);
+    //console.log("config.HAS_ANALOG_DPAD", gamepadState.config.HAS_ANALOG_DPAD);
+	
+	//console.log("A:", gamepadState.digital.A);
+	//console.log("LX", gamepadState.analog_sticks.LX);
+  }
+
+
+
+});
+
+    });
+
+
+	async function SendData(reportId, sig_type, thebytes) {
+		var parts = thebytes.length / 32;
+		if (parts < 1)
+			parts = 1;
+		var part_size = thebytes.length / parts;
+
+		//console.log("thebytes.length:", thebytes.length);
+		//console.log("parts:", parts);
+		//console.log("part_size:", part_size);
+
+		const data = new Uint8Array(34);  // 34-byte payload
+		data[0] = sig_type;//signature
+		//data[1] = 0;//part
+		
+		let index = 0;
+		for (let part = 0; part < parts; part++) {
+			data[1] = part;
+			for (let i = 0; i < part_size; i++) {
+				data[i+2] = thebytes[index];//i + 1;
+				++index;
+			}
+			try {
+			    //await device.open();
+			    //console.log("Device opened:", device.productName);
+			    await device.sendFeatureReport(reportId, data);
+			    //console.log("Feature report sent:", data);
+                console.log("Feature report sent:", sig_type);
+			} catch (err) {
+			    console.error("Send error:", err);
+			}
+			//await device.close();
+		}
+	}
+
+	function sleep(ms) {
+	  return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+    //Send (without eeprom commit)
+    async function SendConfig() {
+	  let has_changes = false;
+	  config_data.forEach(c => {
+		c.current = (c.data_type == Config_Data_Type.BOOL) ? c.el_config.checked : c.el_config.value;
+		if (c.current != c.initial)
+  		  has_changes = true;
+	    //update initial value
+	    c.initial = c.current;
+		//console.log(`${c.key} current=${c.current}, initial=${c.initial}, equals ${c.current != c.initial}`);
+	  });
+
+      has_changes = true;
+
+	  if (!has_changes) {
+		alert("No changes!");
+		return;
+	  }
+
+	  if (has_changes) {
+	  	try {
+	  		// Extract the values
+	  		const values = config_data.map(c => c.current);
+	  		var data = new Uint8Array(values);
+	  		await device.sendFeatureReport(WEB_ID_GET_DEFAULT_SET_APPLY, data); // WEB_ID_GET_CURRENT_SET_SAVE
+	  		console.log("sent WEB_ID_GET_DEFAULT_SET_APPLY");
+
+            //fnkeys
+            //update seconds
+            FUNCTIONS.forEach(fn => {
+                const tr = document.querySelector(`tr[data-fn="${fn}"]`);
+                hotkeySeconds[fn] = tr.querySelector('.seconds-input').value;
+            });
+            const fnkeys_items = getFunctionArray();
+            const FNKEYS_BYTES_PER_ITEM = 5; // 4 bytes for uint32 input + 1 byte for uint8 seconds
+            const fnkeys_buffer = new ArrayBuffer(fnkeys_items.length * FNKEYS_BYTES_PER_ITEM);
+            const fnkeys_view = new DataView(fnkeys_buffer);
+            fnkeys_items.forEach((item, i) => {
+              const offset = i * FNKEYS_BYTES_PER_ITEM;
+              fnkeys_view.setUint32(offset, item.input >>> 0, true);
+              fnkeys_view.setUint8(offset + 4, item.seconds & 0xFF);
+            });
+
+            await device.sendFeatureReport(WEB_ID_GET_FNHOTKEYS, fnkeys_view);
+            console.log(fnkeys_buffer);
+            console.log("sent WEB_ID_GET_FNHOTKEYS");
+            sleep(100);
+
+            //buttonkeys
+            const btnkeys_items = getRemapArray();
+            const BTNKEYS_BYTES_PER_ITEM = 10; // 4 bytes for uint32 input + 4 bytes for uint32 output + 1 byte for uint8 exclusive + 1 byte for uint8 clear
+            const btnkeys_buffer = new ArrayBuffer(btnkeys_items.length * BTNKEYS_BYTES_PER_ITEM);
+            const btnkeys_view = new DataView(btnkeys_buffer);
+            btnkeys_items.forEach((item, i) => {
+              const offset = i * BTNKEYS_BYTES_PER_ITEM;
+              btnkeys_view.setUint32(offset, item.input >>> 0, true);
+              btnkeys_view.setUint32(offset + 4, item.output >>> 0, true);
+              btnkeys_view.setUint8(offset + 8, !!item.exclusive);
+              btnkeys_view.setUint8(offset + 9, !!item.clear);
+            });
+            await device.sendFeatureReport(WEB_ID_GET_BTNHOTKEYS, btnkeys_view);
+            console.log("sent WEB_ID_GET_BTNHOTKEYS");
+            sleep(100);
+
+
+            //outputkeys
+            const outputkeys_items = getShortcutArray();
+            const outputkeys_buffer = new ArrayBuffer(output_shortcut_max);
+            const outputkeys_view = new DataView(outputkeys_buffer);
+            outputkeys_items.forEach((item, i) => {
+              outputkeys_view.setUint8(i, item & 0xFF);
+            });
+            await device.sendFeatureReport(WEB_ID_GET_OUTPUT_SHORTCUT, outputkeys_view);
+            console.log("sent WEB_ID_GET_OUTPUT_SHORTCUT");
+            sleep(100);
+	  	}
+	  	catch(e) {
+	  		console.warn(e);
+	  	}
+	  }
+    }
+
+	document.getElementById('send_bootsel').addEventListener('click', async () => {
+      if (!device) { // !device.opened
+        alert("Device not connected.");
+        return;
+      }
+	  //const reportId = 5;
+		try {
+			//await device.open();
+			await device.sendFeatureReport(WEB_ID_SET_BOOTSEL, new Uint8Array([0]));
+			console.log("sent");
+		}
+		catch(e) {
+		  console.warn(e);
+		}
+		//await device.close();
+	});
+
+	document.getElementById('apply_config').addEventListener('click', async () => {
+      if (!device) { // !device.opened
+        alert("Device not connected.");
+        return;
+      }
+	  	try {
+	  	  await SendConfig();
+	  	}
+	  	catch(e) {
+	  	  console.warn(e);
+	  	}
+	});
+
+	document.getElementById('save_config').addEventListener('click', async () => {
+      if (!device) { // !device.opened
+        alert("Device not connected.");
+        return;
+      }
+
+	  try {
+	   	await SendConfig();
+        sleep(100);
+	  	await device.sendFeatureReport(WEB_ID_SET_COMMIT_EEPROM, new Uint8Array([1]));
+	  	console.log("sent WEB_ID_SET_COMMIT_EEPROM");
+        sleep(100);
+	  }
+	  catch(e) {
+	   	console.warn(e);
+	  }
+
+	});
+
+
+    document.getElementById('send').addEventListener('click', async () => {
+      if (!device) { // !device.opened
+        alert("Device not connected.");
+        return;
+      }
+
+	  try {
+		  await readAllFiles();
+	  }
+	  catch (e) {
+		  alert(e);
+	  }
+
+      const btnsend = document.getElementById('send');
+      btnsend.disabled = true;
+      btnsend.innerText = "Uploading...";
+	  
+	  
+	  //const reportId = 2;
+
+	  try {
+		//await device.open();
+		//console.log("Device opened:", device.productName);
+
+		//const checkbox = document.getElementById('enablekeys');
+		const enablekeys = 1;//checkbox.checked ? 1 : 0;
+
+		  await SendData(WEB_ID_GET_SET_KEYS, 0, new Uint8Array([]));   await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 1, SerialBytes);		    await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 2, SignatureBytes);		await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 3, NBytes);				await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 4, EBytes);				await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 5, PBytes);				await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 6, QBytes);				await sleep(100);
+		  //await SendData(WEB_ID_GET_SET_KEYS, 7, new Uint8Array([enablekeys])); await sleep(100);
+
+        console.log("Waiting for devide to save...\n");
+        const t0 = Date.now();
+		while (true) {
+            const data_with_report_id = await device.receiveFeatureReport(WEB_ID_GET_SET_KEYS); // get_signing_state
+            //dump_hex(data_with_report_id);
+            if (data_with_report_id.getUint8(1) == 2) {
+				console.log("Done!.\n");
+                alert("Done!");
+                break;
+            }
+            if (Date.now() - t0 > 5000) {
+                console.log("Timeout waiting.\n");
+                break;
+            }
+			await sleep(100);
+        }
+	  }
+	  catch(e) {
+		  alert(e);
+	  }
+	  //await device.close();
+      btnsend.disabled = false;
+      btnsend.innerText = "Upload";
+    });
+  </script>
+
+
+
+</html>
