@@ -13,7 +13,7 @@ This is an evolution of my arduino based adadpter. The [RetroZordAdapter](https:
 	- Multitap, Saturn Normal pad, Fighting stick, Twin Stick, Saturn Analog pad, Racing wheel...
 - Famicom/Nes
 	- Nes pad...
-- Super Famicom/Snes]
+- Super Famicom/Snes
 	- Multitap, Snes pad, Snes NTT pad...
 - PlayStation 1/2
 	- Multitap, Digital pad, Analog Stick, DualShock, DualShock 2, Guncon, NeGcon, Volume Paddle, JogCon, Densha de GO, Jet de GO...
@@ -29,22 +29,26 @@ This is an evolution of my arduino based adadpter. The [RetroZordAdapter](https:
 	- Multitap, 2 button controller, 3 button controller, 6 button controller...
 - NeoGeo
 	- Gamepad...
-- ~~3DO~~
-- ~~Jaguar~~
+- 3DO
+    - Gamepad...
+- Jaguar
+    - Gamepad...
 - Custom
 	- Customizable DIY controller with digital and analog features. Easy to setup.
 - USB
 	- Most Xbox/360/One/Series controllers
 	- Most PS3/PS4/PS5 controllers
 	- Most Switch controllers
-	- ~~Check here for a more complete list~~
+	- Check [here](https://github.com/sonik-br/pico_input_usb_tester?tab=readme-ov-file#rough-list-of-supported-devices) for a more complete list
 
 ## Output modes
 
 | Mode        | # devices | Rumble | Analog Buttons | Analog Dpad |
 |-------------|-----------|--------|----------------|-------------|
-| HID_GENERIC | up to 6   |        |                |             |
+| HID         | up to 6   |        |                |             |
+| HID_MISTER  | up to 6   |        |                |             |
 | XINPUT *    | 1         | Yes    |                |             |
+| XINPUTW     | 4         | Yes    |                |             |
 | XID         | 1         | Yes    | Yes            |             |
 | PS3         | 1         | Yes    | Yes            | Yes         |
 | PS4 **      | 1         | Yes    |                |             |
@@ -58,7 +62,7 @@ This is an evolution of my arduino based adadpter. The [RetroZordAdapter](https:
 It might require using a usb hub too. Please note that some usb hubs are not compatible.<br/>
 DualShock 4 v1 (CUH-ZCT1x) is not compatible.
 
-`HID_GENERIC` can automatically change to a Special Mode when a special controller is detected during pico's initialization.
+`HID_MISTER` can automatically change to a Special Mode when a special controller is detected during pico's initialization.
 
 ### Special output modes
 
@@ -77,27 +81,27 @@ Multiple input ports (of same type) can be easily added with small code change.
 
 Suggested pins for single input type. Can be changed on source code.
 																										  
-| RP2040  | USB  | WII  | PSX       | N64        | GAMECUBE   | MD    | SAT   | VBOY   | NES    | SNES    | PCE   | NEOGEO    |
-|---------|------|------|-----------|------------|------------|-------|-------|--------|--------|---------|-------|-----------|
-| 0       | D+   |      |           |            |            |       |       |        |        |         |       |           |
-| 1       | D-   |      |           |            |            |       |       |        |        |         |       |           |
-| 2       |      |      | 9 ACK *1k |            |            |       |       |        |        |         |       |           |
-| 3       |      |      | 2 CMD     |            |            |       |       |        |        |         |       |           |
-| 4       |      |      | 1 DAT *1k | 2 DATA *1k | 2 DATA *1k |       |       |        |        |         |       |           |
-| 5       |      |      | 6 ATT     |            |            |       |       |        |        |         |       |           |
-| 6       |      |      | 7 CLK     |            |            |       |       |        |        |         |       | 03 SELECT |
-| 7       |      |      |           |            |            | 1 D0  | 3 D0  | 4 CLK  | 2 CLK  | 2 CLK   | 2 D0  | 15 UP     |
-| 8       |      |      |           |            |            | 2 D1  | 2 D1  | 2 LAT  | 3 LAT  | 3 LAT   | 4 D2  | 07 DOWN   |
-| 9       |      |      |           |            |            | 3 D2  | 8 D2  | 1 DAT  | 4 DAT  | 4 DAT1  | 5 D3  | 14 LEFT   |
-| 10      |      |      |           |            |            | 4 D3  | 7 D3  |        |        | 5 DAT2* | 3 D1  | 06 RIGHT  |
-| 11      |      |      |           |            |            | 6 TL  | 6 TL  |        |        | 6 SEL*  | 6 SEL | 13 A      |
-| 12      |      |      |           |            |            | 9 TR  | 5 TR  |        |        |         | 7 CLR | 05 B      |
-| 13      |      |      |           |            |            | 7 TH  | 4 TH  |        |        |         |       | 12 C      |
-| 14      |      | SDA  |           |            |            |       |       |        |        |         |       | 04 D      |
-| 15      |      | SCL  |           |            |            |       |       |        |        |         |       | 11 START  |
-| GND     | GND  | GND  | 4 GND     | 3 GND      | 3, 4 GND   | 8 GND | 9 GND | 5 GND  | 1 GND  | 7 GND   | 8 GND | 01 GND    |
-| VBUS/5V | VBUS |      | 3 5V      |            | 1 5V       |       |       |        |        |         |       |           |
-| 3V3     |      | 3.3V | 5 3.3V    | 1 3.3V     | 6 3.3V     | 5 5V  | 1 5V  | 2 5V   | 5 5V   | 1 5V    | 1 5V  | 08 5V     |
+| RP2040  | USB  | WII  | PSX       | N64        | GAMECUBE   | MD    | SAT   | VBOY   | NES    | SNES    | PCE   | NEOGEO    | 3DO   | Jaguar |
+|---------|------|------|-----------|------------|------------|-------|-------|--------|--------|---------|-------|-----------|-------|--------|
+| 0       | D+   |      |           |            |            |       |       |        |        |         |       |           |       |        |
+| 1       | D-   |      |           |            |            |       |       |        |        |         |       |           |       |        |
+| 2       |      |      | 9 ACK *1k |            |            |       |       |        |        |         |       |           |       |        |
+| 3       |      |      | 2 CMD     |            |            |       |       |        |        |         |       |           |       |        |
+| 4       |      |      | 1 DAT *1k | 2 DATA *1k | 2 DATA *1k |       |       |        |        |         |       |           |       |        |
+| 5       |      |      | 6 ATT     |            |            |       |       |        |        |         |       |           |       |        |
+| 6       |      |      | 7 CLK     |            |            |       |       |        |        |         |       | 03 SELECT |       | 04 J0  |
+| 7       |      |      |           |            |            | 1 D0  | 3 D0  | 4 CLK  | 2 CLK  | 2 CLK   | 2 D0  | 15 UP     |       | 14 J8  |
+| 8       |      |      |           |            |            | 2 D1  | 2 D1  | 2 LAT  | 3 LAT  | 3 LAT   | 4 D2  | 07 DOWN   |       | 13 J9  |
+| 9       |      |      |           |            |            | 3 D2  | 8 D2  | 1 DAT  | 4 DAT  | 4 DAT1  | 5 D3  | 14 LEFT   |       | 12 J10 |
+| 10      |      |      |           |            |            | 4 D3  | 7 D3  |        |        | 5 DAT2* | 3 D1  | 06 RIGHT  |       | 11 J11 |
+| 11      |      |      |           |            |            | 6 TL  | 6 TL  |        |        | 6 SEL*  | 6 SEL | 13 A      | 6 OUT | 06 B0  |
+| 12      |      |      |           |            |            | 9 TR  | 5 TR  |        |        |         | 7 CLR | 05 B      | 9 IN  | 10 B1  |
+| 13      |      |      |           |            |            | 7 TH  | 4 TH  |        |        |         |       | 12 C      | 7 CLK | 03 J1  |
+| 14      |      | SDA  |           |            |            |       |       |        |        |         |       | 04 D      |       | 02 J2  |
+| 15      |      | SCL  |           |            |            |       |       |        |        |         |       | 11 START  |       | 01 J3  |
+| GND     | GND  | GND  | 4 GND     | 3 GND      | 3, 4 GND   | 8 GND | 9 GND | 5 GND  | 1 GND  | 7 GND   | 8 GND | 01 GND    | 8 GND | 09 GND |
+| VBUS/5V | VBUS |      | 3 5V      |            | 1 5V       |       |       |        |        |         |       |           |       |        |
+| 3V3     |      | 3.3V | 5 3.3V    | 1 3.3V     | 6 3.3V     | 5 5V  | 1 5V  | 2 5V   | 5 5V   | 1 5V    | 1 5V  | 08 5V     | 5 5V  | 07 5V  |
 
 *1k = 1k resistor pullup to 3.3V
 
@@ -118,7 +122,7 @@ Some controllers run with 5V power and 5V data lines (ie: MD/SAT/VBOY/NES/SNES/P
 
 The wiring above is using 3.3V power/data for all systems.
 
-All controllers tested for the systems in the table worked fine with 3.3V.<br/>
+All controllers tested for the systems in the table worked fine with 3.3V. (expect 3do and jaguar. Those are UNTESTED)<br/>
 If you really want to use 5V on for specific systems, be sure to level-shift (3.3V <-> 5V) all data pins and to power te controller with 5V.
 
 This does not apply to the optional USB HOST port. It can be directly wired to the pico and powered with 5V.
