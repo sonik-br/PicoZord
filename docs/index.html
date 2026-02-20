@@ -102,7 +102,7 @@ https://github.com/OpenStickCommunity/GP2040-CE/
 
 
 
-#stick_info {
+#stick_info, #trigger_info_l2, #trigger_info_r2 {
   font-family:
     'Consolas',
     'Menlo',
@@ -429,7 +429,7 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
 <br/>
 
 
-      <div id="gamepad" class="gamepad" style="display:none">
+      <div id="gamepad" class="gamepad" style="display:flex">
         <div class="section" style="grid-area: dpad">
           <h3>D-Pad</h3>
           <div class="buttons dpad">
@@ -534,8 +534,8 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
           <button id="ANALOG_Y">Y</button>
           <button id="ANALOG_L1">L1</button>
           <button id="ANALOG_R1">R1</button>
-          <button id="ANALOG_L2">L2</button>
-          <button id="ANALOG_R2">R2</button>
+          <button id="ANALOG_L2">L2 <p id="trigger_info_l2"></p></button>
+          <button id="ANALOG_R2">R2 <p id="trigger_info_r2"></p></button>
         </div>
 
         <div class="section" style="grid-area: triggers">
@@ -599,7 +599,7 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
   <div class="tabs">
     <button class="tab-button active" data-tab="tab1">Info</button>
     <button class="tab-button" data-tab="tab2">Config</button>
-	<button class="tab-button" data-tab="tab3" disabled="true">Keys</button>
+	<button class="tab-button" data-tab="tab3">Keys</button>
   </div>
   <div id="tab1" class="tab-content active">
 	<h4>Info</h4>
@@ -613,6 +613,7 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
 	<button class="tab-sub-button" data-tab="tab_sub3">Analog</button>
     <button class="tab-sub-button" data-tab="tab_sub4">Hotkeys</button>
     <button class="tab-sub-button" data-tab="tab_sub5">Other</button>
+    <button class="tab-sub-button" data-tab="tab_sub6">Button remap</button>
   </div>
 
   <div id="tab_sub1" class="tab-sub-content active">
@@ -828,19 +829,56 @@ PS4 Mode details
 	    Default is <span id="default_analog_max_gc">-</span></td>
 	  </tr>
 	  <tr>
+	    <td>GC Analog Trigger Min</td>
+	    <td><input type="number" id="config_analog_min_gctrigger" min="0" max="40" /></td>
+	    <td>Minimum value for GC analog triggers.<br/>
+	    The GC controller does not report the trigger's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_min_gctrigger">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>GC Analog Trigger Max</td>
+	    <td><input type="number" id="config_analog_max_gctrigger" min="140" max="255" /></td>
+	    <td>Maximum value for GC analog triggers.<br/>
+	    The GC controller does not report the trigger's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_max_gctrigger">-</span></td>
+	  </tr>
+	  <tr>
 	    <td>WII Analog Stick Max</td>
 	    <td><input type="number" id="config_analog_max_wii" min="30" max="127" /></td>
 	    <td>Maximum value for GC analog sticks.<br/>
 	    The WII controller does not report the stick's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
 	    Default is <span id="default_analog_max_wii">75</span></td>
 	  </tr>
+	  <tr>
+	    <td>WII Analog Trigger Min</td>
+	    <td><input type="number" id="config_analog_min_wiitrigger" min="0" max="40" /></td>
+	    <td>Minimum value for Wii analog triggers.<br/>
+	    The Wii controller does not report the trigger's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_min_wiitrigger">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>WII Analog Trigger Max</td>
+	    <td><input type="number" id="config_analog_max_wiitrigger" min="140" max="255" /></td>
+	    <td>Maximum value for Wii analog triggers.<br/>
+	    The Wii controller does not report the trigger's full range. Use this setting to fine-tune the reported range so the adapter outputs the full range.<br/>
+	    Default is <span id="default_analog_max_wiitrigger">-</span></td>
+	  </tr>
     </tbody>
     </table>
+
+    <br/>
+    <p id="analog_trigger_info">
+      Analog trigger range<br/>
+      Set min to 0 and max to 255.<br/>
+      Press and release the triggers a few times and take note of the min and max value.<br/>
+      Then configure the adapter with those values.<br/>
+    <p>
+
   </div>
 
   <div id="tab_sub4" class="tab-sub-content">
     <h4>Function Hotkeys</h4>
-    <table class="zebra" id="hotkeyTable">
+    <table class="zebra" id="hotkeyFunctionTable">
       <thead>
         <tr>
           <th>Function</th>
@@ -853,7 +891,7 @@ PS4 Mode details
     </table>
     
     <h4>Button Hotkeys</h4>
-    <table class="zebra" id="remapTable">
+    <table class="zebra" id="hotkeyButtonTable">
       <thead>
         <tr>
           <th>Input</th>
@@ -935,6 +973,41 @@ PS4 Mode details
     <p>
 
   </div>
+
+  <div id="tab_sub6" class="tab-sub-content">
+    <h4>Button Remap</h4>
+    <table>
+      <tbody>
+    	<tr>
+    	  <td>Enable Button Remap</td>
+    	  <td>
+    		<label class="toggle">
+    		  <input type="checkbox" class="toggle-input" id="config_enable_buttonremap" />
+    		  <span class="state state-off" aria-live="polite">Disabled</span>
+    		  <span class="state state-on" aria-hidden="true">Enabled</span>
+    		</label>
+    	  </td>
+    	  <td>
+    		Enable digital button remap.<br/>
+    		Remap is applied right after reading input, and will affect hotkeys too.<br/>
+            Analog buttons will not be remapped.<br/>
+    		Default is <span id="default_enable_buttonremap">-</span>
+            <button id="resetbuttonmap">Reset to default</button>
+    	  </td>
+    	</tr>
+      </tbody>
+    </table>
+
+    <table class="zebra" id="remapButtonTable">
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Output</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div
 
 
 <!--
@@ -1039,6 +1112,8 @@ Any other setting can be tested in real-time with apply.
       { name: 'PAD→',   mask: 1 << 31 }
     ];
 
+    const output_btnremap_max = 14;
+
 
     /***** HOTKEY MAPPER *****/
     const FUNCTIONS = [
@@ -1049,8 +1124,8 @@ Any other setting can be tested in real-time with apply.
     const hotkeys = {};           // fn -> mask
     const hotkeySeconds = {};     // fn -> seconds
 
-    function buildHotkeyTable() {
-      const tbody = document.querySelector('#hotkeyTable tbody');
+    function buildHotkeyFunctionTable() {
+      const tbody = document.querySelector('#hotkeyFunctionTable tbody');
       tbody.innerHTML = '';
       FUNCTIONS.forEach(fn => {
         hotkeys[fn] = 0;
@@ -1098,7 +1173,7 @@ Any other setting can be tested in real-time with apply.
       });
 
       // Menus and listeners
-      document.querySelectorAll('#hotkeyTable .menu').forEach(menu => {
+      document.querySelectorAll('#hotkeyFunctionTable .menu').forEach(menu => {
         menu.innerHTML = '';
         INPUTS.forEach(btn => {
           const item = document.createElement('div');
@@ -1114,7 +1189,7 @@ Any other setting can be tested in real-time with apply.
         });
       });
 
-      document.querySelectorAll('#hotkeyTable .add-btn').forEach(btn => {
+      document.querySelectorAll('#hotkeyFunctionTable .add-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           const menu = e.target.parentNode.querySelector('.menu');
           menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
@@ -1133,7 +1208,7 @@ Any other setting can be tested in real-time with apply.
     }
 
     function renderHotkeyRow(fn) {
-      const tr = document.querySelector(`#hotkeyTable tr[data-fn="${fn}"]`);
+      const tr = document.querySelector(`#hotkeyFunctionTable tr[data-fn="${fn}"]`);
       const sel = tr.querySelector('.selected-btns');
       sel.innerHTML = '';
       const mask = hotkeys[fn];
@@ -1161,8 +1236,8 @@ Any other setting can be tested in real-time with apply.
       () => ({ inputs: 0, outputs: 0, exclusive: false, clear: false })
     );
 
-    function buildRemapTable() {
-      const tbody = document.querySelector('#remapTable tbody');
+    function buildHotkeyButtonTable() {
+      const tbody = document.querySelector('#hotkeyButtonTable tbody');
       tbody.innerHTML = '';
       remaps.forEach((_, idx) => {
         const tr = document.createElement('tr');
@@ -1233,7 +1308,7 @@ Any other setting can be tested in real-time with apply.
       });
 
       // Selection menus
-      document.querySelectorAll('#remapTable .rem-menu').forEach(menu => {
+      document.querySelectorAll('#hotkeyButtonTable .rem-menu').forEach(menu => {
         menu.innerHTML = '';
         const type = menu.dataset.type;
         INPUTS.forEach(btn => {
@@ -1252,7 +1327,7 @@ Any other setting can be tested in real-time with apply.
       });
 
       // Listeners to open menus
-      document.querySelectorAll('#remapTable .add-btn').forEach(btn => {
+      document.querySelectorAll('#hotkeyButtonTable .add-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           const keywrapper = e.target.closest('.keywrapper');
           const menu = keywrapper.querySelector('.rem-menu');
@@ -1261,14 +1336,14 @@ Any other setting can be tested in real-time with apply.
       });
 
       // Listeners to move lines
-      document.querySelectorAll('#remapTable .move-btn').forEach(btn => {
+      document.querySelectorAll('#hotkeyButtonTable .move-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           const tr = e.target.closest('tr');
           const idx = +tr.dataset.index;
           const dir = btn.dataset.dir;
           if (dir === 'up' && idx > 0) swapRows(idx, idx - 1);
           if (dir === 'down' && idx < REMAP_COUNT - 1) swapRows(idx, idx + 1);
-          buildRemapTable();
+          buildHotkeyButtonTable();
         });
       });
 
@@ -1369,9 +1444,62 @@ Any other setting can be tested in real-time with apply.
       return out;
     }
 
+    const buttonremap = {};
+
+    function buildRemapButtonTable() {
+      const tbody = document.querySelector('#remapButtonTable tbody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < output_btnremap_max; i++) {
+        const fn = `config_buttonremap_${INPUTS[i].name}`;
+        buttonremap[i] = 0;
+        const tr = document.createElement('tr');
+        tr.dataset.inputbutton = INPUTS[i].name;
+
+        tr.innerHTML = `
+          <td>${INPUTS[i].name}</td>
+          <td><select id="${fn}"></select></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Menus and listeners
+      document.querySelectorAll('#hotkeyFunctionTable .menu').forEach(menu => {
+        menu.innerHTML = '';
+        INPUTS.forEach(btn => {
+          const item = document.createElement('div');
+          item.className = 'btn-item';
+          item.textContent = btn.name;
+          item.dataset.mask = btn.mask;
+          item.addEventListener('click', () => {
+            const fn = menu.closest('tr').dataset.fn;
+            addHotkeyInput(fn, btn.mask);
+            menu.style.display = 'none';
+          });
+          menu.appendChild(item);
+        });
+      });
+
+      document.querySelectorAll('#hotkeyFunctionTable .add-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const menu = e.target.parentNode.querySelector('.menu');
+          menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        });
+      });
+    }
+
+    function getRemapButtonArray() {
+      const out = [];
+      for (let i = 0; i < output_btnremap_max; i++) {
+        const el = `config_buttonremap_${INPUTS[i].name}`;
+        out.push(document.getElementById(el).selectedIndex);
+      }
+      return out;
+    }
+
     // Init
-    buildHotkeyTable();
-    buildRemapTable();
+    buildHotkeyFunctionTable();
+    buildHotkeyButtonTable();
+    buildRemapButtonTable();
 
     // console.log(getRemapArray());
 
@@ -1409,7 +1537,7 @@ Any other setting can be tested in real-time with apply.
     
       // Rebuild table (reattach listeners) or:
       // remaps.forEach((_, idx) => renderRemapRow(idx));
-      buildRemapTable();
+      buildHotkeyButtonTable();
     }
 
 
@@ -1477,28 +1605,28 @@ buttons_sub.forEach(button => {
     const WEB_ID_GET_BTNHOTKEYS  = 9;
     const WEB_ID_GET_OUTPUT_SHORTCUT = 10;
     const WEB_ID_SET_COMMIT_EEPROM = 11;
+    const WEB_ID_GET_SET_BTNREMAP = 12;
 
 
 const input_mode_list = {
-  RZORD_DUMMY: {bit: 0, enabled: false},
-  RZORD_USB: {bit: 1, enabled: false},
-  RZORD_CUSTOM: {bit: 2, enabled: false},
-  RZORD_MEGADRIVE: {bit: 3, enabled: false},
-  RZORD_SATURN: {bit: 4, enabled: false},
-  RZORD_NES: {bit: 5, enabled: false},
-  RZORD_SNES: {bit: 6, enabled: false},
-  RZORD_VBOY: {bit: 7, enabled: false},
-  RZORD_PCE: {bit: 8, enabled: false},
-  RZORD_WII: {bit: 9, enabled: false},
-  RZORD_N64: {bit: 10, enabled: false},
-  RZORD_GBA: {bit: 11, enabled: false},
-  RZORD_GAMECUBE: {bit: 12, enabled: false},
-  RZORD_PSX: {bit: 13, enabled: false},
-  RZORD_PSX: {bit: 14, enabled: false},
-  RZORD_PSX_JOG: {bit: 15, enabled: false},
-  RZORD_NEOGEO: {bit: 16, enabled: false},
-  RZORD_3DO: {bit: 17, enabled: false},
-  RZORD_JAGUAR: {bit: 18, enabled: false},
+  RZORD_DUMMY: {bit: 0, enabled: false, description: '-'},
+  RZORD_USB: {bit: 1, enabled: false, description: 'USB'},
+  RZORD_CUSTOM: {bit: 2, enabled: false, description: '-'},
+  RZORD_MEGADRIVE: {bit: 3, enabled: false, description: 'MegaDrive'},
+  RZORD_SATURN: {bit: 4, enabled: false, description: 'Saturn'},
+  RZORD_NES: {bit: 5, enabled: false, description: 'NES'},
+  RZORD_SNES: {bit: 6, enabled: false, description: 'SNES'},
+  RZORD_VBOY: {bit: 7, enabled: false, description: 'VirtualBoy'},
+  RZORD_PCE: {bit: 8, enabled: false, description: 'PCEngine'},
+  RZORD_WII: {bit: 9, enabled: false, description: 'Wii'},
+  RZORD_N64: {bit: 10, enabled: false, description: 'N64'},
+  RZORD_GBA: {bit: 11, enabled: false, description: 'GBA'},
+  RZORD_GAMECUBE: {bit: 12, enabled: false, description: 'GameCube'},
+  RZORD_PSX: {bit: 13, enabled: false, description: 'PSX'},
+  RZORD_PSX_JOG: {bit: 14, enabled: false, description: 'PSX Jogcon'},
+  RZORD_NEOGEO: {bit: 15, enabled: false, description: 'NeoGeo'},
+  RZORD_3DO: {bit: 16, enabled: false, description: '3DO'},
+  RZORD_JAGUAR: {bit: 17, enabled: false, description: 'Jaguar'},
 };
 //input_mode_list.RZORD_USB.enabled=true;
 //input_mode_list.RZORD_MEGADRIVE.enabled=true;
@@ -1522,7 +1650,7 @@ const Config_Data_Input_Mode = Object.freeze(
 );
 
 const Config_Data_Output_Mode = Object.freeze({
-  OUTPUT_HID: 0,         // HID Generic
+  OUTPUT_HID: 0,             // HID Generic
   OUTPUT_MISTER: 1,          // MiSTer (HID)
   OUTPUT_MISTER_JOGCON: 2,   // MiSTer Jogcon (HID)
   OUTPUT_MISTER_NEGCON: 3,   // MiSTer Negcon (HID)
@@ -1530,17 +1658,22 @@ const Config_Data_Output_Mode = Object.freeze({
   OUTPUT_HID_JOGCONMOUSE: 5, // HID Jogcon gamepad+mouse
   //OUTPUT_HID_GUNCONMOUSE: ,  // HID Guncon mouse
   OUTPUT_XINPUT: 6,          // xbox360 (without auth, but works with UsbdSecPatch)
-  OUTPUT_XINPUTW: 7,          // xbox360 wireless receiver
+  OUTPUT_XINPUTW: 7,         // xbox360 wireless receiver
   OUTPUT_XID: 8,             // ogXbox (analog buttons)
   OUTPUT_PS3: 9,             // dualshock3 (analog buttons)
-  OUTPUT_PS4: 10,             // requires auth. DS4 (v2) is supported
-  OUTPUT_PS5: 11,             // requires auth. DS4 does not work, requires specialized controller
-  OUTPUT_SWITCH: 12,          // pokken
-  OUTPUT_SWITCHPRO: 13,       // switch pro
-  OUTPUT_PANTHERLORD: 14,     // generic ps1/ps2 to usb adapter
-  OUTPUT_GCWIIU: 15,          // WUP-028
-  OUTPUT_MDMINI: 16,          // Megadrive Mini
-  //OUTPUT_WEBCONFIG: 17        // Webconfig
+  OUTPUT_PS4: 10,            // requires auth. DS4 (v2) is supported
+  OUTPUT_PS5: 11,            // NOT IMPLEMENTED
+  OUTPUT_SWITCH: 12,         // pokken
+  OUTPUT_SWITCHPRO: 13,      // switch pro
+  OUTPUT_PANTHERLORD: 14,    // generic ps1/ps2 to usb adapter
+  OUTPUT_GCWIIU: 15,         // WUP-028
+  OUTPUT_MDMINI: 16,         // Megadrive Mini
+  OUTPUT_PSCLASSIC: 17,      // PlayStation Classic Mini
+  OUTPUT_PCEMINI: 18,        // PCEngine Mini
+  OUTPUT_NEOGEOMINI: 19,     // Neogeo Mini
+  OUTPUT_ASTROCITYMINI: 20,  // AstroCity Mini
+  OUTPUT_EGRETMINI: 21,      // Egret Mini
+  //OUTPUT_WEBCONFIG: 22        // Webconfig
 });
 const LAST_MISTER_MODE = Config_Data_Output_Mode.OUTPUT_MISTER_GUNCON;
 
@@ -1644,6 +1777,8 @@ for (const [key, value] of Object.entries(Config_Data_Output_Mode)) {
   const opt = new Option(key, value, false, false);
   if (value > Config_Data_Output_Mode.OUTPUT_MISTER && value <= LAST_MISTER_MODE)
 	opt.disabled = true;
+  else if (value == Config_Data_Output_Mode.OUTPUT_PS5)
+	opt.disabled = true;
   select2.add(opt);
 
   //do the same for the mode shortcuts
@@ -1655,6 +1790,21 @@ for (const [key, value] of Object.entries(Config_Data_Output_Mode)) {
 	    opt_sub.disabled = true;
       select_sub.add(opt_sub);
   }
+}
+
+//now the button remap
+for (let i = 0; i < output_btnremap_max; i++) {
+  const el = `config_buttonremap_${INPUTS[i].name}`;
+  const select_sub = document.getElementById(el);
+  for (let c = 0; c < output_btnremap_max; c++) {
+    const opt = new Option(INPUTS[c].name, c, false, false);
+    if (i == c)
+      opt.selected = true;
+    select_sub.add(opt);
+  }
+  //last one is fixed
+  const opt_unmaped = new Option("- DISABLED -", 15, false, false); // todo create constant 0xf
+  select_sub.add(opt_unmaped);
 }
 
 
@@ -1672,6 +1822,12 @@ const config_data = [
   { id: 8,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'enable_ps4key', el_config: document.getElementById('config_enable_ps4key'), el_default: document.getElementById('default_enable_ps4key') },
   { id: 9,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_n64', el_config: document.getElementById('config_analog_max_n64'), el_default: document.getElementById('default_analog_max_n64') },
   { id: 10, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_gc', el_config: document.getElementById('config_analog_max_gc'), el_default: document.getElementById('default_analog_max_gc') },
+  { id: 11, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_min_gctrigger', el_config: document.getElementById('config_analog_min_gctrigger'), el_default: document.getElementById('default_analog_min_gctrigger') },
+  { id: 12, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_gctrigger', el_config: document.getElementById('config_analog_max_gctrigger'), el_default: document.getElementById('default_analog_max_gctrigger') },
+  { id: 13, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_wii', el_config: document.getElementById('config_analog_max_wii'), el_default: document.getElementById('default_analog_max_wii') },
+  { id: 14, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_min_wiitrigger', el_config: document.getElementById('config_analog_min_wiitrigger'), el_default: document.getElementById('default_analog_min_wiitrigger') },
+  { id: 15, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_wiitrigger', el_config: document.getElementById('config_analog_max_wiitrigger'), el_default: document.getElementById('default_analog_max_wiitrigger') },
+  { id: 16, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'enable_buttonremap', el_config: document.getElementById('config_enable_buttonremap'), el_default: document.getElementById('default_enable_buttonremap') },
 ];
 
 	//hid device
@@ -2168,6 +2324,12 @@ function updateGamepadUI(state) {
   L2.style.background = `rgb(${analog.ANALOG_L2 * 2}, 100, 100)`;
   R2.style.background = `rgb(${analog.ANALOG_R2 * 2}, 100, 100)`;
 
+  const tinfol2 = document.getElementById('trigger_info_l2');
+  tinfol2.innerText = analog.ANALOG_L2;
+
+  const tinfor2 = document.getElementById('trigger_info_r2');
+  tinfor2.innerText = analog.ANALOG_R2;
+
   // Analog sticks
   const leftStick = document.getElementById('leftStick');
   const rightStick = document.getElementById('rightStick');
@@ -2182,6 +2344,11 @@ var normalizedLY = normalizeStick(sticks.LY, precision);
 const roundedLX = normalizedLX.toFixed(2);//Math.round(normalizedLX * 100) / 100;
 const roundedLY = normalizedLY.toFixed(2);//Math.round(normalizedLX * 100) / 100;
 
+var normalizedRX = normalizeStick(sticks.RX, precision);
+var normalizedRY = normalizeStick(sticks.RY, precision);
+const roundedRX = normalizedLX.toFixed(2);//Math.round(normalizedRX * 100) / 100;
+const roundedRY = normalizedLY.toFixed(2);//Math.round(normalizedRX * 100) / 100;
+
 
 const moveThumb = (id, xNorm, yNorm) => {
 	const thumb = document.getElementById(id);
@@ -2193,7 +2360,7 @@ const moveThumb = (id, xNorm, yNorm) => {
 };
 
 moveThumb('thumb-LX', normalizedLX, normalizedLY);
-//moveThumb('thumb-RX', rx, ry);
+moveThumb('thumb-RX', normalizedRX, normalizedRY); //moveThumb('thumb-RX', rx, ry);
 
 const fmtFract = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
@@ -2242,6 +2409,14 @@ navigator.hid.addEventListener("disconnect", async (event) => {
 
 });
 
+document.getElementById('resetbuttonmap').addEventListener('click', async () => {
+  for (let i = 0; i < output_btnremap_max; i++) {
+    const el = `config_buttonremap_${INPUTS[i].name}`;
+    const select_sub = document.getElementById(el);
+    select_sub.selectedIndex = i;
+  }
+});
+
 document.getElementById('disconnect').addEventListener('click', async () => {
 	await disconnect();
 });
@@ -2276,17 +2451,54 @@ const byteArray1 = new Uint8Array(data_1.buffer);
 //byteArray[0] == 1 report id
 console.log("Feature Report Data:", byteArray1);
 
-const platform_sub = byteArray1[1] & 0x0F;
-const platform = (byteArray1[1] >> 4) | ((byteArray1[2] & 0x03) << 4);
-const revision = (byteArray1[2] >> 2) & 0x3F;
-console.log("Firmware revision:", revision);
-console.log("Platform:", platform);
-console.log("Platform_sub:", platform_sub);
+//const platform_sub = byteArray1[1] & 0x0F;
+//const platform = (byteArray1[1] >> 4) | ((byteArray1[2] & 0x03) << 4);
+//const revision = (byteArray1[2] >> 2) & 0x3F;
+const minor = byteArray1[1] & 0x07;
+const major = (byteArray1[1] >> 3) & 0x1F;
+const adapter = (byteArray1[2] >> 4) & 0xF;
+const revision = (byteArray1[2]) & 0xF;
+//console.log("Firmware info:");
+//console.log("Adapter:", adapter);
+//console.log("Revision:", revision);
+//console.log("Major:", major);
+//console.log("Minor:", minor);
 
+
+const patch = byteArray1[1] & 0x01;
+const day = (byteArray1[1] >> 1) & 0x1F;
+const month = ((byteArray1[1] >> 6) & 0x3F) | ((byteArray1[2] & 0x03) << 2);
+const year = 2000 + ((byteArray1[2] >> 2) & 0x3F);
+const protocol = byteArray1[3] | (byteArray1[4] << 8);
+console.log("Firmware info:");
+console.log("Patch:", patch);
+console.log("Day:", day);
+console.log("Month:", month);
+console.log("Year:", year);
+console.log("Protocol:", protocol);
+
+if (protocol != 0) {
+    await disconnect();
+    alert(`Device firmware not supported!`);
+    throw new Error(`Device firmware not supported!`);
+}
+
+
+if (adapter != 1 || revision != 1) {
+    //await disconnect();
+    //alert('Adapter not supported!');
+    //throw new Error('Adapter not supported!');
+}
 
 const paragraph = document.getElementById('device_info');
-paragraph.innerText = `Firmware revision: ${revision}`;
+paragraph.innerText = `Firmware date: ${year}-${month}-${day} (${patch})`;
 
+if (major != 0 || minor != 0) {
+    //await disconnect();
+    //alert(`Firmware not supported!`);
+    //throw new Error(`Firmware not supported!`);
+}
+    
 
 
 
@@ -2464,10 +2676,22 @@ for (let i = 0; i < output_shortcut_max; i++) {
 }
 
 
-if(revision == 1)
-	console.log("Supported firmware.");
-else
-	console.log("NON supported firmware.");
+
+const data_btnremap = await device.receiveFeatureReport(WEB_ID_GET_SET_BTNREMAP);
+const byteArray_btnremap = new Uint8Array(data_btnremap.buffer);
+console.log("Report 12. Buttonremaps: ", byteArray_btnremap);
+const btnremapView = byteArray_btnremap.subarray(1, output_btnremap_max);
+for (let i = 0; i < output_btnremap_max; i++) {
+  const el = `config_buttonremap_${INPUTS[i].name}`;
+  const select_sub = document.getElementById(el);
+  select_sub.selectedIndex = mapGet(btnremapView, i);
+}
+
+
+//if (revision == 1)
+//	console.log("Supported firmware.");
+//else
+//	console.log("NON supported firmware.");
 
 
 // if supported...
@@ -2518,6 +2742,46 @@ device.addEventListener("inputreport", (event) => {
 });
 
     });
+
+function mapGet(m, idx) {
+  // bounds & type checks (lightweight)
+  idx = idx >>> 0;
+  if (idx >= 14) throw new RangeError("idx must be 0..13");
+
+  const bitpos = idx * 4;           // bit position
+  const byte = bitpos >> 3;         // which byte
+  const shift = bitpos & 7;         // bit offset inside byte
+
+  const lo = (byte < m.length) ? m[byte] : 0;
+  const hi = (byte + 1 < m.length) ? m[byte + 1] : 0;
+  const v = lo | (hi << 8);
+
+  return (v >> shift) & 0x0F;
+}
+
+function mapSet(buf, idx, val, offset = 0) {
+  // normalize & validate
+  idx = idx >>> 0;
+  if (idx >= 14) throw new RangeError("idx must be 0..13");
+  val = val & 0x0F;
+
+  const bitpos = idx * 4;           // bit position relative to map start
+  const byteIndex = (bitpos >> 3) + (offset >>> 0);
+  const shift = bitpos & 7;
+
+  // read two bytes (safe even if near end; treat missing as 0)
+  const lo = (byteIndex < buf.length) ? buf[byteIndex] : 0;
+  const hi = (byteIndex + 1 < buf.length) ? buf[byteIndex + 1] : 0;
+  let v = (lo | (hi << 8)) >>> 0;
+
+  // clear the 4-bit field and set new value
+  v &= ~((0x0F << shift) >>> 0);
+  v |= ((val & 0x0F) << shift) >>> 0;
+
+  // write back two bytes (only if within bounds)
+  if (byteIndex < buf.length) buf[byteIndex] = v & 0xFF;
+  if (byteIndex + 1 < buf.length) buf[byteIndex + 1] = (v >>> 8) & 0xFF;
+}
 
 
 	async function SendData(reportId, sig_type, thebytes) {
@@ -2633,6 +2897,27 @@ device.addEventListener("inputreport", (event) => {
             await device.sendFeatureReport(WEB_ID_GET_OUTPUT_SHORTCUT, outputkeys_view);
             console.log("sent WEB_ID_GET_OUTPUT_SHORTCUT");
             sleep(100);
+
+
+
+            //button remap
+            const outputremapbuttons_items = getRemapButtonArray();
+            const outputremapbuttons_array = new Uint8Array(output_btnremap_max);
+            outputremapbuttons_items.forEach((item, i) => {
+              mapSet(outputremapbuttons_array, i, item & 0xF);
+            });
+
+            const outputremapbuttons_buffer = new ArrayBuffer(output_btnremap_max);
+            new Uint8Array(outputremapbuttons_buffer).set(outputremapbuttons_array);
+            const outputremapbuttons_view = new DataView(outputremapbuttons_buffer);
+
+            console.log(outputremapbuttons_view);
+            await device.sendFeatureReport(WEB_ID_GET_SET_BTNREMAP, outputremapbuttons_view);
+            console.log("sent WEB_ID_GET_SET_BTNREMAP");
+            sleep(100);
+
+
+
 	  	}
 	  	catch(e) {
 	  		console.warn(e);
@@ -2724,7 +3009,7 @@ device.addEventListener("inputreport", (event) => {
 		  await SendData(WEB_ID_GET_SET_KEYS, 4, EBytes);				await sleep(100);
 		  await SendData(WEB_ID_GET_SET_KEYS, 5, PBytes);				await sleep(100);
 		  await SendData(WEB_ID_GET_SET_KEYS, 6, QBytes);				await sleep(100);
-		  //await SendData(WEB_ID_GET_SET_KEYS, 7, new Uint8Array([enablekeys])); await sleep(100);
+		  await SendData(WEB_ID_GET_SET_KEYS, 7, new Uint8Array([enablekeys])); await sleep(100);
 
         console.log("Waiting for devide to save...\n");
         const t0 = Date.now();
@@ -2748,6 +3033,7 @@ device.addEventListener("inputreport", (event) => {
 	  }
 	  //await device.close();
       btnsend.disabled = false;
+      alert('Key upload success!');
       btnsend.innerText = "Upload";
     });
   </script>
