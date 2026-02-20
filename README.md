@@ -1,9 +1,12 @@
-# PicoZord
+# PicoZord (aka RetroZordAdapter)
 Pico multiple controller adapter
 
 WORK IN PROGRESS
 
 This is an evolution of my arduino based adadpter. The [RetroZordAdapter](https://github.com/sonik-br/RetroZordAdapter/).
+
+All input and output modes are included on on a single firmware.<br/>
+User must configure (via web interface) the desired input and output mode.
 
 ## Input modes
 
@@ -34,50 +37,63 @@ This is an evolution of my arduino based adadpter. The [RetroZordAdapter](https:
 - Jaguar
     - Gamepad...
 - Custom
-	- Customizable DIY controller with digital and analog features. Easy to setup.
+	- ~~Customizable DIY controller with digital and analog features. Easy to setup.~~
 - USB
 	- Most Xbox/360/One/Series controllers
 	- Most PS3/PS4/PS5 controllers
 	- Most Switch controllers
+ 	- Some USB Hubs for multiple controller input
 	- Check [here](https://github.com/sonik-br/pico_input_usb_tester?tab=readme-ov-file#rough-list-of-supported-devices) for a more complete list
 
 ## Output modes
 
-| Mode        | # devices | Rumble | Analog Buttons | Analog Dpad |
-|-------------|-----------|--------|----------------|-------------|
-| HID         | up to 6   |        |                |             |
-| HID_MISTER  | up to 6   |        |                |             |
-| XINPUT *    | 1         | Yes    |                |             |
-| XINPUTW     | 4         | Yes    |                |             |
-| XID         | 1         | Yes    | Yes            |             |
-| PS3         | 1         | Yes    | Yes            | Yes         |
-| PS4 **      | 1         | Yes    |                |             |
-| SWITCH      | up to 6   |        |                |             |
-| SWITCH_PRO  | up to 6   | Yes    |                |             |
-| GCWIIU      | up to 4   | Yes    |                |             |
-| ~~PANTHERLORD~~ | ~~up to 2?~~  | ~~Yes~~    |                |             |
+| Mode          | # Devices | Rumble | Analog Trigger/Button/Dpad | Notes                       |
+|---------------|-----------|--------|----------------------------|-----------------------------|
+| HID           | Up to 6   |        | Trigger                    | Generic DINPUT              |
+| HID_MISTER    | Up to 6   |        |                            | MiSTer specific mode        |
+| XINPUT *      | 1         | Yes    | Trigger                    | Generic Xinput for PC/X360  |
+| XINPUTW       | 4         | Yes    | Trigger                    | Xinput for PC only          |
+| XID           | 1         | Yes    | Trigger, Button            | ogXbox                      |
+| PS3           | 1         | Yes    | Trigger, Button, Dpad      | PS3/RPCS3                   |
+| PS4 **        | 1         | Yes    | Trigger                    | PS4                         |
+| SWITCH        | Up to 6   |        |                            | Generic Switch              |
+| SWITCH_PRO    | Up to 6   | Yes    |                            | Switch Pro / NSO controller |
+| GCWIIU        | Up to 4   | Yes    | Trigger                    | WUP-028 for Dolphin/WiiU/NS |
+| PANTHERLORD   | Up to 2   | Yes    |                            | Generic PS2 to USB adapter  |
+| MDMINI        | 1         |        |                            | MegaDrive Mini              |
+| PSCLASSIC     | 1         |        |                            | PlayStation Mini            |
+| PCEMINI       | 1         |        |                            | PCEngine Mini               |
+| NEOGEOMINI    | 1         |        |                            | NeoGeo Mini                 |
+| ASTROCITYMINI | 1         |        |                            | AstroCity Mini              |
+| EGRETMINI     | 1         |        |                            | Egret Mini                  |
 
-\* XINPUT mode does not work on console.<br/>
-\** PS4 authorization requires using a controller, dongle or adapter on the USB HOST port.<br/>
+
+\* XINPUT mode does work on console if using UsbdSecPatch.<br/>
+\** PS4 authorization requires using extracted keys from a controller, or a controller/dongle/adapter on the USB HOST port.<br/>
 It might require using a usb hub too. Please note that some usb hubs are not compatible.<br/>
-DualShock 4 v1 (CUH-ZCT1x) is not compatible.
+DualShock 4 v1 (CUH-ZCT1x) is not compatible for console auth.
 
 `HID_MISTER` can automatically change to a Special Mode when a special controller is detected during pico's initialization.
 
 ### Special output modes
 
-| Mode        | # devices | Obs.                  |
+| Mode        | # Devices | Notes                 |
 |-------------|-----------|-----------------------|
 | NEGCON      | 1?        | MiSTer Wheel/Paddle   |
 | JOGCON      | 1?        | MiSTer Spinner/Paddle |
 | JOGCONMOUSE | 1?        | Gamepad + Mouse       |
 | GUNCON      | 1?        | MiSTer Lightgun       |
 
+## Configuration
+
+Put the device into webconfig mode, then open [sonik-br.github.io/PicoZord](https://sonik-br.github.io/PicoZord/).
+
+To put the adapter in webconfig:<br/>
+During initialization, the led will blink for some seconds. Just press BOOTSEL or START during that time window.
+
 ## Input Wiring
 
-Multiple input ports (of same type) can be easily added with small code change.
-
-~~Multi inpute mode with selection might happen in future update~~
+~~Multiple input ports (of same type) can be easily added with small code change.~~
 
 Suggested pins for single input type. Can be changed on source code.
 																										  
