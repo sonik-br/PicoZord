@@ -633,24 +633,22 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
 	  <td><select id="config_outputmode"></select></td>
 	  <td>Output from the adapter<br/>Default is <span id="default_outputmode">-</span></td>
 	  </tr>
-      <!--
       <tr>
-	  <td>Automatic Output Mode</td>
+	  <td>Automatic USB Output Mode</td>
 	  <td>
         <label class="toggle">
-    	    <input type="checkbox" class="toggle-input" id="config_enable_automatic_output" />
+    	    <input type="checkbox" class="toggle-input" id="config_enable_usbdetect" />
     	    <span class="state state-off" aria-live="polite">Disabled</span>
     	    <span class="state state-on" aria-hidden="true">Enabled</span>
         </label>
       </td>
 	  <td>
-      Automatically change the Output Mode based on USB Host detection.<br/>
-      Supports: Windows, Switch, PS4, ogXbox.<br/>
+      Automatically change Output Mode based on USB Host detection.<br/>
+      Supports: Windows, Switch 1, PS4, ogXbox.<br/>
       Will fall back to the selected Output Mode.<br/>
-      Default is <span id="default_automatic_output">Disabled</span>
+      Default is <span id="default_enable_usbdetect">Disabled</span>
       </td>
 	  </tr>
-      -->
     </tbody>
     </table>
 	
@@ -1813,21 +1811,22 @@ for (let i = 0; i < output_btnremap_max; i++) {
 //id is used as byte-index
 const config_data = [
   { id: 1,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Input_Mode,  name: 'devicemode', el_config: document.getElementById('config_devicemode'), el_default: document.getElementById('default_devicemode') },
-  { id: 2,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE,   enumRef: Config_Data_Output_Mode, name: 'outputmode', el_config: document.getElementById('config_outputmode'), el_default: document.getElementById('default_outputmode') },
+  { id: 2,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Output_Mode, name: 'outputmode', el_config: document.getElementById('config_outputmode'), el_default: document.getElementById('default_outputmode') },
   { id: 3,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Socd_Mode,   name: 'socdmode', el_config: document.getElementById('config_socdmode'), el_default: document.getElementById('default_socdmode') },
-  { id: 4,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					   name: 'deadzone_percent', el_config: document.getElementById('config_deadzone_percent'), el_default: document.getElementById('default_deadzone_percent') },
-  { id: 5,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'dpad_as_buttons', el_config: document.getElementById('config_dpad_as_buttons'), el_default: document.getElementById('default_dpad_as_buttons') },
-  { id: 6,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'nso_special', el_config: document.getElementById('config_nso_special'), el_default: document.getElementById('default_nso_special') },
+  { id: 4,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					name: 'deadzone_percent', el_config: document.getElementById('config_deadzone_percent'), el_default: document.getElementById('default_deadzone_percent') },
+  { id: 5,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'dpad_as_buttons', el_config: document.getElementById('config_dpad_as_buttons'), el_default: document.getElementById('default_dpad_as_buttons') },
+  { id: 6,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'nso_special', el_config: document.getElementById('config_nso_special'), el_default: document.getElementById('default_nso_special') },
   { id: 7,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.MULTIPLE, enumRef: Config_Data_Ps4_Mode,    name: 'ps4_mode', el_config: document.getElementById('config_ps4_mode'), el_default: document.getElementById('default_ps4_mode') },
-  { id: 8,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'enable_ps4key', el_config: document.getElementById('config_enable_ps4key'), el_default: document.getElementById('default_enable_ps4key') },
-  { id: 9,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_n64', el_config: document.getElementById('config_analog_max_n64'), el_default: document.getElementById('default_analog_max_n64') },
-  { id: 10, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_gc', el_config: document.getElementById('config_analog_max_gc'), el_default: document.getElementById('default_analog_max_gc') },
-  { id: 11, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_min_gctrigger', el_config: document.getElementById('config_analog_min_gctrigger'), el_default: document.getElementById('default_analog_min_gctrigger') },
-  { id: 12, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_gctrigger', el_config: document.getElementById('config_analog_max_gctrigger'), el_default: document.getElementById('default_analog_max_gctrigger') },
-  { id: 13, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_wii', el_config: document.getElementById('config_analog_max_wii'), el_default: document.getElementById('default_analog_max_wii') },
-  { id: 14, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_min_wiitrigger', el_config: document.getElementById('config_analog_min_wiitrigger'), el_default: document.getElementById('default_analog_min_wiitrigger') },
-  { id: 15, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				   name: 'analog_max_wiitrigger', el_config: document.getElementById('config_analog_max_wiitrigger'), el_default: document.getElementById('default_analog_max_wiitrigger') },
-  { id: 16, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					   name: 'enable_buttonremap', el_config: document.getElementById('config_enable_buttonremap'), el_default: document.getElementById('default_enable_buttonremap') },
+  { id: 8,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'enable_usbdetect', el_config: document.getElementById('config_enable_usbdetect'), el_default: document.getElementById('default_enable_usbdetect') },
+  { id: 9,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'enable_ps4key', el_config: document.getElementById('config_enable_ps4key'), el_default: document.getElementById('default_enable_ps4key') },
+  { id: 10,  default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,  enumRef: null, 				    name: 'analog_max_n64', el_config: document.getElementById('config_analog_max_n64'), el_default: document.getElementById('default_analog_max_n64') },
+  { id: 11, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_max_gc', el_config: document.getElementById('config_analog_max_gc'), el_default: document.getElementById('default_analog_max_gc') },
+  { id: 12, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_min_gctrigger', el_config: document.getElementById('config_analog_min_gctrigger'), el_default: document.getElementById('default_analog_min_gctrigger') },
+  { id: 13, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_max_gctrigger', el_config: document.getElementById('config_analog_max_gctrigger'), el_default: document.getElementById('default_analog_max_gctrigger') },
+  { id: 14, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_max_wii', el_config: document.getElementById('config_analog_max_wii'), el_default: document.getElementById('default_analog_max_wii') },
+  { id: 15, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_min_wiitrigger', el_config: document.getElementById('config_analog_min_wiitrigger'), el_default: document.getElementById('default_analog_min_wiitrigger') },
+  { id: 16, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_max_wiitrigger', el_config: document.getElementById('config_analog_max_wiitrigger'), el_default: document.getElementById('default_analog_max_wiitrigger') },
+  { id: 17, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'enable_buttonremap', el_config: document.getElementById('config_enable_buttonremap'), el_default: document.getElementById('default_enable_buttonremap') },
 ];
 
 	//hid device
@@ -2477,7 +2476,7 @@ console.log("Month:", month);
 console.log("Year:", year);
 console.log("Protocol:", protocol);
 
-if (protocol != 0) {
+if (protocol != 1) {
     await disconnect();
     alert(`Device firmware not supported!`);
     throw new Error(`Device firmware not supported!`);
