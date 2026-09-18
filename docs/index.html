@@ -102,7 +102,7 @@ https://github.com/OpenStickCommunity/GP2040-CE/
 
 
 
-#stick_info, #trigger_info_l2, #trigger_info_r2 {
+#stick_info, #abtn_info_pu, #abtn_info_pd, #abtn_info_pl, #abtn_info_pr, #abtn_info_a, #abtn_info_b, #abtn_info_x, #abtn_info_y, #abtn_info_l1, #abtn_info_r1, #abtn_info_l2, #abtn_info_r2 {
   font-family:
     'Consolas',
     'Menlo',
@@ -528,14 +528,18 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
 
         <div class="section buttons" style="grid-area: analogbuttons">
           <h3>Analog Buttons</h3>
-          <button id="ANALOG_A">A</button>
-          <button id="ANALOG_B">B</button>
-          <button id="ANALOG_X">X</button>
-          <button id="ANALOG_Y">Y</button>
-          <button id="ANALOG_L1">L1</button>
-          <button id="ANALOG_R1">R1</button>
-          <button id="ANALOG_L2">L2 <p id="trigger_info_l2"></p></button>
-          <button id="ANALOG_R2">R2 <p id="trigger_info_r2"></p></button>
+          <button id="ANALOG_PAD_U">↑ <p id="abtn_info_pu"></p></button>
+          <button id="ANALOG_PAD_D">↓ <p id="abtn_info_pd"></p></button>
+          <button id="ANALOG_PAD_L">← <p id="abtn_info_pl"></p></button>
+          <button id="ANALOG_PAD_R">→ <p id="abtn_info_pr"></p></button>
+          <button id="ANALOG_A">A <p id="abtn_info_a"></p></button>
+          <button id="ANALOG_B">B <p id="abtn_info_b"></p></button>
+          <button id="ANALOG_X">X <p id="abtn_info_x"></p></button>
+          <button id="ANALOG_Y">Y <p id="abtn_info_y"></p></button>
+          <button id="ANALOG_L1">L1 <p id="abtn_info_l1"></p></button>
+          <button id="ANALOG_R1">R1 <p id="abtn_info_r1"></p></button>
+          <button id="ANALOG_L2">L2 <p id="abtn_info_l2"></p></button>
+          <button id="ANALOG_R2">R2 <p id="abtn_info_r2"></p></button>
         </div>
 
         <div class="section" style="grid-area: triggers">
@@ -651,6 +655,29 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
 	  </tr>
     </tbody>
     </table>
+
+    <h4>Multi Input mode shortcut</h4>
+	<table class="zebra">
+    <thead>
+      <tr><th>Item</th><th>Current</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+	  <tr>
+	    <td>Multi-mode GPIO</td>
+        <td><input type="number" id="config_multimode_first_gpio" min="-1" max="30" /></td>
+	    <td>Switch to select Input mode during boot.<br/>
+	    Sets the first GPIO number. Up to 3 consecutive GPIO can be used.<br/>
+        Set as -1 to disable the feature.<br/>
+	    Default is <span id="default_multimode_first_gpio">-</span></td>
+	  </tr>
+    </tbody>
+    </table>
+	<table class="zebra" id="multimodeTable">
+    <thead>
+      <tr><th>GPIO</th><th>Input Mode</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+    </table>
 	
     <h4>Output mode shortcut</h4>
 	<table class="zebra" id="shortcutTable">
@@ -740,6 +767,21 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
     	  <td>GAMEPAD and ARCADESTICK is supported on all PS4 games (on PS4 or PS5 console).<br/>ARCADESTICK is supported on some PS5 games.</td>
     	  -->
     	</tr>
+        <tr>
+	      <td>USB Host</td>
+	      <td>
+            <label class="toggle">
+    	      <input type="checkbox" class="toggle-input" id="config_enable_usbhost" />
+    	      <span class="state state-off" aria-live="polite">Disabled</span>
+    	      <span class="state state-on" aria-hidden="true">Enabled</span>
+            </label>
+          </td>
+	      <td>
+          Enable USB Host.<br/>
+          Requires a USB Host input port.<br/>
+          Default is <span id="default_enable_usbhost">Disabled</span>
+          </td>
+	    </tr>
     	<tr>
     	  <td>Use PS4 Keys</td>
     	  <td>
@@ -752,7 +794,7 @@ body { font-family: sans-serif; background: white; color: black; text-align: cen
     	  <td>
     		Use uploaded key files extracted from a DualShock 4 controller. Used when in OUTPUT_PS4 mode.<br/>
     		Enable to use the uploaded files.<br/>
-    		Disable to use USB Passthrough (requires a USB Host input port).<br/>
+    		Disable to use USB Passthrough (requires a USB Host input port and USB Host enabled).<br/>
     		Default is <span id="default_enable_ps4key">-</span>
     	  </td>
     	</tr>
@@ -811,6 +853,19 @@ PS4 Mode details
 	    <td>The inner deadzone is the radius around the stick center that is treated as neutral.<br/>
 	    Enter a percentage value; the same value is applied to both analog sticks if they are present.<br/>
 	    Default is <span id="default_deadzone_percent">-</span></td>
+	  </tr>
+	  <tr>
+	    <td>Analog triggers to right stick</td>
+	    <td>
+          <label class="toggle">
+    	    <input type="checkbox" class="toggle-input" id="config_switchpro_triggers_to_rs" />
+    	    <span class="state state-off" aria-live="polite">Disabled</span>
+    	    <span class="state state-on" aria-hidden="true">Enabled</span>
+          </label>
+        </td>
+	    <td>Map analog triggers to right stick up/down.<br/>
+	    Only applies to Switch Pro mode.<br/>
+	    Default is <span id="default_switchpro_triggers_to_rs">-</span></td>
 	  </tr>
 	  <tr>
 	    <td>N64 Analog Stick Max</td>
@@ -912,7 +967,21 @@ PS4 Mode details
         <tr><th>Item</th><th>Current</th><th>Description</th></tr>
       </thead>
       <tbody>
-    
+    	<tr>
+    	  <td>Skip boot delay</td>
+    	  <td>
+    		<label class="toggle">
+    		  <input type="checkbox" class="toggle-input" id="config_skip_initial_delay" />
+    		  <span class="state state-off" aria-live="polite">Disabled</span>
+    		  <span class="state state-on" aria-hidden="true">Enabled</span>
+    		</label>
+    	  </td>
+    	  <td>
+          Adapter delays it's initialization to poll a connected controller or to press BOOTSEL to enter web config mode.<br/>
+          This delay is variable, based on the configured input mode. Varies from 1.5 to 3 seconds.<br/>
+          "Skip boot delay" forces the delay to just 0.5 seconds.<br/>
+          Default is <span id="default_skip_initial_delay">-</span></td>
+    	</tr>
     	<tr>
     	  <td>SOCD Mode</td>
     	  <td>
@@ -958,6 +1027,16 @@ PS4 Mode details
     		</label>
     	  </td>
     	  <td>Enable "Nintendo Switch Online" controller special modes.<br/>Default is <span id="default_nso_special">-</span></td>
+    	</tr>
+    	<tr>
+    	  <td>Min rumble</td>
+    	  <td><input type="number" id="config_min_rumble" min="1" max="255" /></td>
+    	  <td>Min rumble power. 1 to 255.<br/>Default is <span id="default_min_rumble">-</span></td>
+    	</tr>
+    	<tr>
+    	  <td>Max rumble</td>
+    	  <td><input type="number" id="config_max_rumble" min="0" max="255" /></td>
+    	  <td>Max rumble power. 0 to 255. 0 disables rumble.<br/>Default is <span id="default_max_rumble">-</span></td>
     	</tr>
       </tbody>
     </table>
@@ -1117,7 +1196,8 @@ Any other setting can be tested in real-time with apply.
     const FUNCTIONS = [
       'FN_BOOTSEL',
       'FN_REBOOT',
-      'FN_DPAD_AS_BUTTONS'
+      'FN_DPAD_AS_BUTTONS',
+      'FN_TRIGGER_TO_RS'
     ];
     const hotkeys = {};           // fn -> mask
     const hotkeySeconds = {};     // fn -> seconds
@@ -1442,6 +1522,15 @@ Any other setting can be tested in real-time with apply.
       return out;
     }
 
+    function getMultimodeArray() {
+      const out = [];
+      for (let i = 0; i < multimode_max; i++) {
+        const el = `config_multimode_${i}`;
+        out.push(document.getElementById(el).value);
+      }
+      return out;
+    }
+
     const buttonremap = {};
 
     function buildRemapButtonTable() {
@@ -1459,30 +1548,6 @@ Any other setting can be tested in real-time with apply.
         `;
         tbody.appendChild(tr);
       }
-
-      // Menus and listeners
-      document.querySelectorAll('#hotkeyFunctionTable .menu').forEach(menu => {
-        menu.innerHTML = '';
-        INPUTS.forEach(btn => {
-          const item = document.createElement('div');
-          item.className = 'btn-item';
-          item.textContent = btn.name;
-          item.dataset.mask = btn.mask;
-          item.addEventListener('click', () => {
-            const fn = menu.closest('tr').dataset.fn;
-            addHotkeyInput(fn, btn.mask);
-            menu.style.display = 'none';
-          });
-          menu.appendChild(item);
-        });
-      });
-
-      document.querySelectorAll('#hotkeyFunctionTable .add-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-          const menu = e.target.parentNode.querySelector('.menu');
-          menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-        });
-      });
     }
 
     function getRemapButtonArray() {
@@ -1604,9 +1669,11 @@ buttons_sub.forEach(button => {
     const WEB_ID_GET_OUTPUT_SHORTCUT = 10;
     const WEB_ID_SET_COMMIT_EEPROM = 11;
     const WEB_ID_GET_SET_BTNREMAP = 12;
+    const WEB_ID_GET_SET_MULTIMODEMAP = 13;
 
 
 const input_mode_list = {
+  RZORD_NONE: {bit: 0, enabled: false, description: '-'},
   RZORD_DUMMY: {bit: 0, enabled: false, description: '-'},
   RZORD_USB: {bit: 1, enabled: false, description: 'USB'},
   RZORD_CUSTOM: {bit: 2, enabled: false, description: '-'},
@@ -1671,7 +1738,8 @@ const Config_Data_Output_Mode = Object.freeze({
   OUTPUT_NEOGEOMINI: 19,     // Neogeo Mini
   OUTPUT_ASTROCITYMINI: 20,  // AstroCity Mini
   OUTPUT_EGRETMINI: 21,      // Egret Mini
-  //OUTPUT_WEBCONFIG: 22        // Webconfig
+  OUTPUT_ZEEBO: 22,          // Zeebo
+  //OUTPUT_WEBCONFIG: 23        // Webconfig
 });
 const LAST_MISTER_MODE = Config_Data_Output_Mode.OUTPUT_MISTER_GUNCON;
 
@@ -1702,6 +1770,38 @@ for (const [field, props] of Object.entries(input_mode_list)) {
   opt.disabled = true;
   select.add(opt);
 }
+
+const multimode_max = 3;
+{
+      const tbody = document.querySelector('#multimodeTable tbody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < multimode_max; i++) {
+        const fn = `config_multimode_${i}`;
+        const tr = document.createElement('tr');
+        tr.dataset.fn = fn;
+
+        tr.innerHTML = `
+	      <td>Multi-mode GPIO +${i}</td>
+	      <td><select id="${fn}"></select></td>
+	      <td>Input into the adapter.<br/>Set as RZORD_NONE to disable.<br/>Default is <span id="default_${fn}">RZORD_NONE</span></td>
+        `;
+        tbody.appendChild(tr);
+      }
+        
+}
+/*
+for (let i = 0; i < multimode_max; i++) {
+  for (const [field, props] of Object.entries(input_mode_list)) {
+    const el = `config_multimode_${i}`;
+    const select_sub = document.getElementById(el);
+    const opt_sub = new Option(field, '', false, false);
+    opt_sub.disabled = true;
+    select_sub.add(opt_sub);
+    if (field === 'RZORD_NONE');
+      opt_sub.disabled = false;
+  }
+}
+*/
 
 /*
 let counter = 0;
@@ -1827,6 +1927,12 @@ const config_data = [
   { id: 15, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_min_wiitrigger', el_config: document.getElementById('config_analog_min_wiitrigger'), el_default: document.getElementById('default_analog_min_wiitrigger') },
   { id: 16, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null, 				    name: 'analog_max_wiitrigger', el_config: document.getElementById('config_analog_max_wiitrigger'), el_default: document.getElementById('default_analog_max_wiitrigger') },
   { id: 17, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'enable_buttonremap', el_config: document.getElementById('config_enable_buttonremap'), el_default: document.getElementById('default_enable_buttonremap') },
+  { id: 18, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'skip_initial_delay', el_config: document.getElementById('config_skip_initial_delay'), el_default: document.getElementById('default_skip_initial_delay') },
+  { id: 19, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'switchpro_triggers_to_rs', el_config: document.getElementById('config_switchpro_triggers_to_rs'), el_default: document.getElementById('default_switchpro_triggers_to_rs') },
+  { id: 20, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					name: 'min_rumble', el_config: document.getElementById('config_min_rumble'), el_default: document.getElementById('default_min_rumble') },
+  { id: 21, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					name: 'max_rumble', el_config: document.getElementById('config_max_rumble'), el_default: document.getElementById('default_max_rumble') },
+  { id: 22, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.BOOL,     enumRef: null,					name: 'enable_usb_host', el_config: document.getElementById('config_enable_usbhost'), el_default: document.getElementById('default_enable_usbhost') },
+  { id: 23, default: 0, initial: 0, current: 0, data_type: Config_Data_Type.COMMON,   enumRef: null,					name: 'multimode_first_gpio', el_config: document.getElementById('config_multimode_first_gpio'), el_default: document.getElementById('default_multimode_first_gpio') },
 ];
 
 	//hid device
@@ -1985,6 +2091,14 @@ const analog_stick_precision = {
   ANALOG_STICK_PRECISION_16: 2
 };
 
+const analog_stick_gate = {
+  ANALOG_GATE_RAW: 0,
+  ANALOG_GATE_SQUIRCLE: 1,
+  ANALOG_GATE_CIRCLE: 2,
+  ANALOG_GATE_SQUARE: 3,
+  ANALOG_GATE_OCTAGON: 4
+};
+
 function normalizeStick(value, precision) {
   switch (precision) {
     case analog_stick_precision.ANALOG_STICK_PRECISION_8:
@@ -2015,9 +2129,14 @@ function parseUsboutInputReport(view) {
     HAS_ANALOG_DPAD: !!(configByte & 0b10000000),
   };
 
+  const sticks_precision_bits = view.getUint8(offset++);
+  const sticks_gate = view.getUint8(offset++);
+  offset++ // padding
+
   const connected = !!view.getUint8(offset++);
   const pending_send = !!view.getUint8(offset++);
-  const sticks_precision_bits = view.getUint8(offset++);
+  const updated_during_poll = view.getUint8(offset++);
+  offset++ // padding
 
   const digital_buttons = view.getUint32(offset, true);
   offset += 4;
@@ -2071,6 +2190,9 @@ function parseUsboutInputReport(view) {
 
   const paddle = view.getUint8(offset++);
   const spinner = view.getInt8(offset++);
+  offset++ // padding
+  offset++ // padding
+
   const mouse_x = view.getInt8(offset++);
   const mouse_y = view.getInt8(offset++);
   const mouse_wheel_x = view.getInt8(offset++);
@@ -2299,6 +2421,7 @@ async function readFileAsBinaryStringAsync(file) {
 function updateGamepadUI(state) {
   const digital = state.digital;
   const analog = state.analog_buttons;
+  const analog_pad = state.analog_pad;
   const precision = state.sticks_precision_bits;
   const sticks = state.analog_sticks;
 
@@ -2316,17 +2439,71 @@ function updateGamepadUI(state) {
 	});
   });
 
-  // Analog triggers
+  // Analog triggers and buttons
   //todo add all analog buttons too
+  const PAD_U = document.getElementById('ANALOG_PAD_U');
+  const PAD_D = document.getElementById('ANALOG_PAD_D');
+  const PAD_L = document.getElementById('ANALOG_PAD_L');
+  const PAD_R = document.getElementById('ANALOG_PAD_R');
+  const A = document.getElementById('ANALOG_A');
+  const B = document.getElementById('ANALOG_B');
+  const X = document.getElementById('ANALOG_X');
+  const Y = document.getElementById('ANALOG_Y');
+  
+  PAD_U.style.background = `rgb(${analog_pad.ANALOG_PAD_U * 2}, 100, 100)`;
+  PAD_D.style.background = `rgb(${analog_pad.ANALOG_PAD_D * 2}, 100, 100)`;
+  PAD_L.style.background = `rgb(${analog_pad.ANALOG_PAD_L * 2}, 100, 100)`;
+  PAD_R.style.background = `rgb(${analog_pad.ANALOG_PAD_R * 2}, 100, 100)`;
+
+  A.style.background = `rgb(${analog.ANALOG_A * 2}, 100, 100)`;
+  B.style.background = `rgb(${analog.ANALOG_B * 2}, 100, 100)`;
+  X.style.background = `rgb(${analog.ANALOG_X * 2}, 100, 100)`;
+  Y.style.background = `rgb(${analog.ANALOG_Y * 2}, 100, 100)`;
+
+  const L1 = document.getElementById('ANALOG_L1');
+  const R1 = document.getElementById('ANALOG_R1');
+  L1.style.background = `rgb(${analog.ANALOG_L1 * 2}, 100, 100)`;
+  R1.style.background = `rgb(${analog.ANALOG_R1 * 2}, 100, 100)`;
+
   const L2 = document.getElementById('ANALOG_L2');
   const R2 = document.getElementById('ANALOG_R2');
   L2.style.background = `rgb(${analog.ANALOG_L2 * 2}, 100, 100)`;
   R2.style.background = `rgb(${analog.ANALOG_R2 * 2}, 100, 100)`;
 
-  const tinfol2 = document.getElementById('trigger_info_l2');
+  const tinfopu = document.getElementById('abtn_info_pu');
+  tinfopu.innerText = analog_pad.ANALOG_PAD_U;
+
+  const tinfopd = document.getElementById('abtn_info_pd');
+  tinfopd.innerText = analog_pad.ANALOG_PAD_D;
+
+  const tinfopl = document.getElementById('abtn_info_pl');
+  tinfopl.innerText = analog_pad.ANALOG_PAD_L;
+
+  const tinfopr = document.getElementById('abtn_info_pr');
+  tinfopr.innerText = analog_pad.ANALOG_PAD_R;
+
+  const tinfoa = document.getElementById('abtn_info_a');
+  tinfoa.innerText = analog.ANALOG_A;
+
+  const tinfob = document.getElementById('abtn_info_b');
+  tinfob.innerText = analog.ANALOG_B;
+
+  const tinfox = document.getElementById('abtn_info_x');
+  tinfox.innerText = analog.ANALOG_X;
+
+  const tinfoy = document.getElementById('abtn_info_y');
+  tinfoy.innerText = analog.ANALOG_Y;
+
+  const tinfol1 = document.getElementById('abtn_info_l1');
+  tinfol1.innerText = analog.ANALOG_L1;
+
+  const tinfor1 = document.getElementById('abtn_info_r1');
+  tinfor1.innerText = analog.ANALOG_R1;
+
+  const tinfol2 = document.getElementById('abtn_info_l2');
   tinfol2.innerText = analog.ANALOG_L2;
 
-  const tinfor2 = document.getElementById('trigger_info_r2');
+  const tinfor2 = document.getElementById('abtn_info_r2');
   tinfor2.innerText = analog.ANALOG_R2;
 
   // Analog sticks
@@ -2476,7 +2653,7 @@ console.log("Month:", month);
 console.log("Year:", year);
 console.log("Protocol:", protocol);
 
-if (protocol != 1) {
+if (protocol != 2) {
     await disconnect();
     alert(`Device firmware not supported!`);
     throw new Error(`Device firmware not supported!`);
@@ -2545,6 +2722,16 @@ opts.forEach((opt) => {
   opt.value = '';
 });
 
+for (let i = 0; i < multimode_max; i++) {
+    const el = document.getElementById(`config_multimode_${i}`);
+    el.options.length = 0;
+    //const optsMultimode = Array.from(el.options);
+    //optsMultimode.forEach((opt) => {
+    //  opt.disabled = true;	
+    //  opt.value = '';
+    //});
+}
+
 
 for (const [field, props] of Object.entries(input_mode_list)) {
   //console.log(`Field: ${field}`);
@@ -2557,6 +2744,15 @@ for (const [field, props] of Object.entries(input_mode_list)) {
   );
   match.disabled = !props.enabled;
   match.value = props.enabled ? counter : '';
+
+
+  for (let i = 0; i < multimode_max; i++) {
+    const el = document.getElementById(`config_multimode_${i}`);
+    if (props.enabled || field === 'RZORD_NONE') {
+      el.add(new Option(field, counter, false, false));
+    }
+  }
+
   // new Option(text, value, defaultSelected?, selected?)
   //const opt = new Option(field, props.enabled ? counter : '', false, false);
   //select.add(opt);
@@ -2571,9 +2767,14 @@ for (const [field, props] of Object.entries(input_mode_list)) {
 //reportId = 6; // get default values
 const data_6 = await device.receiveFeatureReport(WEB_ID_GET_DEFAULT_SET_APPLY);
 const byteArray6 = new Uint8Array(data_6.buffer);
+const byteArray6Signed = new Int8Array(data_6.buffer);
 console.log("Report 6. Default config: ", byteArray6);
 config_data.forEach(c => {
-  c.default = byteArray6[c.id];
+  if (c.el_config.type == "number" && c.el_config.min == "-1")    
+    c.default = byteArray6Signed[c.id];
+  else
+    c.default = byteArray6[c.id];
+
   if (c.data_type == Config_Data_Type.BOOL)
 	c.el_default.innerText = c.default ? "Enabled" : "Disabled";
   else if (c.data_type == Config_Data_Type.MULTIPLE && c.enumRef)
@@ -2609,9 +2810,13 @@ config_data.forEach(c => {
 //reportId = 7; // get current values
 const data_7 = await device.receiveFeatureReport(WEB_ID_GET_CURRENT_SET_SAVE);
 const byteArray7 = new Uint8Array(data_7.buffer);
+const byteArray7Signed = new Int8Array(data_7.buffer);
 console.log("Report 7. Current config: ", byteArray7);
 config_data.forEach(c => {
-  c.initial = byteArray7[c.id];
+  if (c.el_config.type == "number" && c.el_config.min == "-1")    
+    c.initial = byteArray7Signed[c.id];
+  else
+    c.initial = byteArray7[c.id];
   c.current = c.initial;
   if (c.data_type == Config_Data_Type.BOOL)
 	c.el_config.checked = c.initial ? true : false;
@@ -2684,6 +2889,16 @@ for (let i = 0; i < output_btnremap_max; i++) {
   const el = `config_buttonremap_${INPUTS[i].name}`;
   const select_sub = document.getElementById(el);
   select_sub.selectedIndex = mapGet(btnremapView, i);
+}
+
+const data_multimodemap = await device.receiveFeatureReport(WEB_ID_GET_SET_MULTIMODEMAP);
+const byteArray_multimodemap = new Uint8Array(data_multimodemap.buffer);
+console.log("Report 13. Multimodemap: ", byteArray_multimodemap);
+const multimodemapView = byteArray_multimodemap.subarray(1, multimode_max);
+for (let i = 0; i < multimode_max; i++) {
+  const el = `config_multimode_${i}`;
+  const select_sub = document.getElementById(el);
+  select_sub.selectedIndex = byteArray_multimodemap[i+1];
 }
 
 
@@ -2913,6 +3128,20 @@ function mapSet(buf, idx, val, offset = 0) {
             console.log(outputremapbuttons_view);
             await device.sendFeatureReport(WEB_ID_GET_SET_BTNREMAP, outputremapbuttons_view);
             console.log("sent WEB_ID_GET_SET_BTNREMAP");
+            sleep(100);
+
+
+            //multimode map
+            const multimode_items = getMultimodeArray();
+            const multimode_buffer = new ArrayBuffer(multimode_max);
+            const multimode_view = new DataView(multimode_buffer);
+            multimode_items.forEach((item, i) => {
+              multimode_view.setUint8(i, item & 0xFF);
+            });
+    console.log(multimode_items);
+            console.log(multimode_view);
+            await device.sendFeatureReport(WEB_ID_GET_SET_MULTIMODEMAP, multimode_view);
+            console.log("sent WEB_ID_GET_SET_MULTIMODEMAP");
             sleep(100);
 
 
